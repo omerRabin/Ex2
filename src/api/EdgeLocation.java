@@ -1,8 +1,8 @@
 package api;
 
 public class EdgeLocation implements edge_location{
-    private double ratio;
-    private edge_data edge;
+    private double ratio;//a relative position
+    private edge_data edge;//edge
     public EdgeLocation(double ratio,edge_data edge){
         this.ratio=ratio;
         this.edge=edge;
