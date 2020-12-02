@@ -66,24 +66,67 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         if(countVisited==this.ga.getV().size()) return true;//if we visited all nodes
         return false;
     }
-    public void invertingHelp(NodeData n){
-        Iterator<node_data> it=n.getNi().values().iterator();
-        while (it.hasNext()){
-            NodeData curr=(NodeData)it.next();
-            if(!curr.getNi().containsKey(n.getKey())) {//Checks whether a reversal is necessary because in the other case
-                //there is edge also in the opposite direction and then it's doesn't matter
-                n.getNi().remove(curr.getKey(),curr);//exchange the directions by remove from ni
-                curr.getNi().put(n.getKey(),n);//exchange the directions by insert to ni
+    private int countEdges(){
+        int counter=0;
+        Iterator<node_data> it=this.ga.getV().iterator();
+        while(it.hasNext()) {
+            counter+=this.ga.getE(it.next().getKey()).size();
+        }
+        return counter;
+    }
+    private void initializeTagNode(){
+        Iterator<node_data> it=this.ga.getV().iterator();
+        while(it.hasNext()){
+            Iterator<edge_data> itE=this.ga.getE(it.next().getKey()).iterator();
+            while(itE.hasNext()){
+                itE.next().setTag(0);
             }
         }
     }
+    public int counter=0;
+    public void invertingHelp(NodeData n){
+        Iterator<node_data> it=n.getNi().values().iterator();
+        while (it.hasNext()){
+            if(countEdges()==counter) break;//check if we finished
+            NodeData curr=(NodeData)it.next();
+            if(this.ga.getEdge(curr.getKey(),n.getKey())==null) {//if we did not yet flip the edge from curr to n
+                if (!curr.getNi().containsKey(n.getKey())) {//Checks whether a reversal is necessary because in the other case
+                    //there is edge also in the opposite direction and then it's doesn't matter
+                    if (this.ga.getEdge(n.getKey(), curr.getKey()).getTag() == 0) {
+                        n.getNi().remove(curr.getKey(), curr);//exchange the directions by remove from ni
+                        curr.getNi().put(n.getKey(), n);//exchange the directions by insert to ni
+                        double e = this.ga.getEdge(n.getKey(), curr.getKey()).getWeight();
+                        this.ga.getEdge(n.getKey(), curr.getKey()).setTag(1);//set tag to 1 if we flipped this edge
+                        counter++;
+                    }
+                }
+            }
+            else{
+                if (!curr.getNi().containsKey(n.getKey())&&this.ga.getEdge(curr.getKey(),n.getKey()).getTag()!=1) {//Checks whether a reversal is necessary because in the other case
+                    //there is edge also in the opposite direction and then it's doesn't matter
+                    if (this.ga.getEdge(n.getKey(), curr.getKey()).getTag() == 0) {
+                        n.getNi().remove(curr.getKey(), curr);//exchange the directions by remove from ni
+                        curr.getNi().put(n.getKey(), n);//exchange the directions by insert to ni
+                        double e = this.ga.getEdge(n.getKey(), curr.getKey()).getWeight();
+                        this.ga.removeEdge(n.getKey(), curr.getKey());
+                        this.ga.connect(curr.getKey(), n.getKey(), e);
+                        this.ga.getEdge(n.getKey(), curr.getKey()).setTag(1);//set to 1 if we flipped this edge
+                        counter++;
+                    }
+                }
+            }
+        }
+    }
+
     private void invertingGraphDirections(directed_weighted_graph g){
+        initializeTagNode();
         Iterator<node_data> it=this.ga.getV().iterator();
         while(it.hasNext()){//exchange all directions in graph
-            NodeData curr=(NodeData) it.next();
+            NodeData curr=(NodeData)it.next();
             invertingHelp(curr);
         }
     }
+
     @Override
     public boolean isConnected() {
         if(this.ga.getV().size()==0) return true;//empty graph is connected

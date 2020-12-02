@@ -49,6 +49,7 @@ public class DWGraph_Algo_Test {
     }
     @Test
     public void isConnectedTest(){
+
         DWGraph_DS g1=new DWGraph_DS();
         NodeData n1=new NodeData(1);
         NodeData n2=new NodeData(2);
@@ -72,6 +73,52 @@ public class DWGraph_Algo_Test {
         graphA.init(g3);
         assertEquals(true,graphA.isConnected());//graph with only one node is connected
 
+        //more complicated case
+        DWGraph_DS g4=new DWGraph_DS();
+        NodeData n4=new NodeData(4);
+        NodeData n5=new NodeData(5);
+        NodeData n6=new NodeData(6);
+
+        g4.addNode(n4);
+        g4.addNode(n5);
+        g4.addNode(n6);
+        g4.connect(4,5,4);
+        g4.connect(5,6,6);
+        g4.connect(6,4,3);
+        DWGraph_Algo g4A=new DWGraph_Algo();
+        g4A.init(g4);
+        assertEquals(true,g4A.isConnected());
+        //-------------------------------------------
+        DWGraph_DS g5=new DWGraph_DS();
+        NodeData n7=new NodeData(7);
+        NodeData n8=new NodeData(8);
+        NodeData n9=new NodeData(9);
+        g5.addNode(n7);
+        g5.addNode(n8);
+        g5.addNode(n9);
+        g5.connect(7,8,3);
+        g5.connect(9,7,4);
+        g5.connect(9,8,6);
+        DWGraph_Algo g5A=new DWGraph_Algo();
+        g5A.init(g5);
+        assertEquals(false,g5A.isConnected());
+        //----------------------------------------------
+        DWGraph_DS g6=new DWGraph_DS();
+        NodeData n10=new NodeData(10);
+        NodeData n11=new NodeData(11);
+        NodeData n12=new NodeData(12);
+        g5.addNode(n10);
+        g5.addNode(n11);
+        g5.addNode(n12);
+        g5.connect(10,11,3);
+        g5.connect(10,12,4);
+        g5.connect(11,10,6);
+        g5.connect(11,12,3);
+        g5.connect(12,10,4);
+        g5.connect(12,11,6);
+        DWGraph_Algo g6A=new DWGraph_Algo();
+        g6A.init(g6);
+        assertEquals(true,g6A.isConnected());
     }
     @Test
     public void DijkstraHelpTest() {
