@@ -187,5 +187,9 @@ public class DWGraph_Algo_Test {
         graphA.init(graph);
         graphA.save("graph.json");
     }
+    @Test
+    public void loadTest(){
+        assertEquals(true,graphA.load("data/A0"));
+    }
 
 }

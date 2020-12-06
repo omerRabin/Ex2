@@ -2,9 +2,7 @@ package api;
 
 import com.google.gson.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -272,7 +270,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
             JsonObject curr=new JsonObject();
             curr.addProperty("src",ed.get(i).getSrc());
             curr.addProperty("w",ed.get(i).getWeight());
-            curr.addProperty("dest",ed.get(i).getDest());
+            curr.addProperty("dest",ed.get(i).getDest());;
             edges.add(curr);
         }
         JsonArray nodes=new JsonArray();
@@ -300,6 +298,19 @@ public class DWGraph_Algo implements dw_graph_algorithms{
     @Override
     public boolean load(String file) {
 
-        return false;
+        try {
+            GsonBuilder builder=new GsonBuilder();
+            builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());
+            Gson gson=builder.create();
+
+            FileReader reader=new FileReader(file);
+            directed_weighted_graph graph =gson.fromJson(reader,directed_weighted_graph.class);
+            this.ga=graph;
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }

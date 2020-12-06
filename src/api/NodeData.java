@@ -24,6 +24,17 @@ public class NodeData implements node_data{
         this.tagAlgo=tagAlgo;
         this.p=p;
     }
+    public NodeData(geo_location pos,int id){
+        this.pos=pos;
+        this.id=id;
+        this.Edges=new HashMap<Integer, edge_data>();
+        this.ni=new HashMap<Integer, node_data>();
+        this.weight=0;
+        this.info=null;
+        this.tag=0;
+        this.tagAlgo=0;
+        this.p=null;
+    }
     public NodeData(int id){
         this.pos=new GeoLocation();
         this.id=id;
