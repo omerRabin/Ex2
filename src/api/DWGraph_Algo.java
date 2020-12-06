@@ -1,5 +1,12 @@
 package api;
 
+import com.google.gson.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class DWGraph_Algo implements dw_graph_algorithms{
@@ -84,7 +91,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
     }
     public int counter=0;
-    public void invertingHelp(NodeData n){
+    private void invertingHelp(NodeData n){
         Iterator<node_data> it=n.getNi().values().iterator();
         while (it.hasNext()){
             if(countEdges()==counter) break;//check if we finished
@@ -234,13 +241,65 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
         return false;
     }
+    private ArrayList<edge_data> getEdges(){
+        ArrayList<edge_data> arr=new ArrayList<edge_data>();
+        int index=0;
+        Iterator<node_data> iter=getGraph().getV().iterator();
+        while(iter.hasNext()){
+            Iterator<edge_data> itEd=getGraph().getE(iter.next().getKey()).iterator();
+            while(itEd.hasNext()){
+                arr.add(itEd.next());
+                index++;
+            }
+        }
+        return arr;
+    }
+    private ArrayList<node_data> getNodes(){
+        ArrayList<node_data> arr=new ArrayList<node_data>();
+        int index=0;
+        Iterator<node_data> iter=getGraph().getV().iterator();
+        while(iter.hasNext()){
+            arr.add(iter.next());
+        }
+        return arr;
+    }
     @Override
     public boolean save(String file) {
-        return false;
+        JsonObject json_object = new JsonObject();
+        JsonArray edges=new JsonArray();
+        ArrayList<edge_data> ed=getEdges();
+        for(int i=0;i<ed.size();i++){
+            JsonObject curr=new JsonObject();
+            curr.addProperty("src",ed.get(i).getSrc());
+            curr.addProperty("w",ed.get(i).getWeight());
+            curr.addProperty("dest",ed.get(i).getDest());
+            edges.add(curr);
+        }
+        JsonArray nodes=new JsonArray();
+        ArrayList<node_data> no=getNodes();
+        for(int j=0;j<no.size();j++){
+            JsonObject curr=new JsonObject();
+            curr.addProperty("pos",no.get(j).getLocation().x()+","+no.get(j).getLocation().y()+","+no.get(j).getLocation().z());
+            curr.addProperty("id",no.get(j).getKey());
+            nodes.add(curr);
+        }
+        json_object.add("Edges",edges);
+        json_object.add("Nodes",nodes);
+        try {
+            PrintWriter pw=new PrintWriter(new File(file));
+            pw.write(String.valueOf(json_object));
+            pw.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
-
     @Override
     public boolean load(String file) {
+
         return false;
     }
 }

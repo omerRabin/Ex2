@@ -109,6 +109,7 @@ public class DWGraph_DS implements directed_weighted_graph{
             n.getNi().remove(dest,getNode(dest));//remove from ni
             edge_data e=n.getEdge(dest);
             n.getEdges().remove(dest,(EdgeData)e);//remove edge
+            this.edges--;
             return e;
         }
         return null;

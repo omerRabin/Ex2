@@ -182,5 +182,10 @@ public class DWGraph_Algo_Test {
         graphA.init(g);
         assertEquals(2,graphA.shortestPathDist(0,4));
     }
+    @Test
+    public void saveTest(){
+        graphA.init(graph);
+        graphA.save("graph.json");
+    }
 
 }
