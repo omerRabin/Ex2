@@ -263,29 +263,29 @@ public class DWGraph_Algo implements dw_graph_algorithms{
     }
     @Override
     public boolean save(String file) {
-        JsonObject json_object = new JsonObject();
-        JsonArray edges=new JsonArray();
-        ArrayList<edge_data> ed=getEdges();
+        JsonObject json_object = new JsonObject();//create json object
+        JsonArray edges=new JsonArray();//create json array
+        ArrayList<edge_data> ed=getEdges();//create array list of all the edges by call to getEdges method
         for(int i=0;i<ed.size();i++){
-            JsonObject curr=new JsonObject();
+            JsonObject curr=new JsonObject();//create jasonObject each loop for inserting the information about each edge
             curr.addProperty("src",ed.get(i).getSrc());
             curr.addProperty("w",ed.get(i).getWeight());
             curr.addProperty("dest",ed.get(i).getDest());;
-            edges.add(curr);
+            edges.add(curr);//add the jason object to the jason array of the edges
         }
         JsonArray nodes=new JsonArray();
         ArrayList<node_data> no=getNodes();
         for(int j=0;j<no.size();j++){
             JsonObject curr=new JsonObject();
-            curr.addProperty("pos",no.get(j).getLocation().x()+","+no.get(j).getLocation().y()+","+no.get(j).getLocation().z());
+            curr.addProperty("pos",no.get(j).getLocation().x()+","+no.get(j).getLocation().y()+","+no.get(j).getLocation().z());//take the position and convert to string
             curr.addProperty("id",no.get(j).getKey());
             nodes.add(curr);
         }
-        json_object.add("Edges",edges);
-        json_object.add("Nodes",nodes);
+        json_object.add("Edges",edges);//insert the edges array to the jason object
+        json_object.add("Nodes",nodes);//insert the nodes array to the jason object
         try {
             PrintWriter pw=new PrintWriter(new File(file));
-            pw.write(String.valueOf(json_object));
+            pw.write(String.valueOf(json_object));//write the jason to the file
             pw.close();
         }
         catch (FileNotFoundException e)
@@ -299,13 +299,13 @@ public class DWGraph_Algo implements dw_graph_algorithms{
     public boolean load(String file) {
 
         try {
-            GsonBuilder builder=new GsonBuilder();
-            builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());
-            Gson gson=builder.create();
+            GsonBuilder builder=new GsonBuilder();//create the Gson builder
+            builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());//using the method in GraphJsonDeserializer class to make the json to graph
+            Gson gson=builder.create();//create the json
 
             FileReader reader=new FileReader(file);
-            directed_weighted_graph graph =gson.fromJson(reader,directed_weighted_graph.class);
-            this.ga=graph;
+            directed_weighted_graph graph =gson.fromJson(reader,directed_weighted_graph.class);//convert the gson to graph from json
+            this.ga=graph;//make this.ga to be the graph from the json file
         }
         catch (FileNotFoundException e){
             e.printStackTrace();
