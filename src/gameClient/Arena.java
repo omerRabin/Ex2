@@ -129,9 +129,9 @@ public class Arena {
 	private static boolean isOnEdge(geo_location p, geo_location src, geo_location dest ) {
 
 		boolean ans = false;
-		double dist = src.distance(dest);
-		double d1 = src.distance(p) + p.distance(dest);
-		if(dist>d1-EPS2) {ans = true;}
+		double dist = src.distance(dest);//edge distance
+		double d1 = src.distance(p) + p.distance(dest);//
+		if(dist>d1-EPS2) {ans = true;}//check if the pokemon is on the edge
 		return ans;
 	}
 	private static boolean isOnEdge(geo_location p, int s, int d, directed_weighted_graph g) {

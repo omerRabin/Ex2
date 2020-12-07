@@ -39,7 +39,7 @@ public class Ex2_Client implements Runnable{
 		while(game.isRunning()) {
 			moveAgants(game, gg);
 			try {
-				if(ind%1==0) {_win.repaint();}
+				if(ind%3==0) {_win.repaint();}
 				Thread.sleep(dt);
 				ind++;
 			}
@@ -108,8 +108,6 @@ public class Ex2_Client implements Runnable{
 		_win = new MyFrame("test Ex2");
 		_win.setSize(1000, 700);
 		_win.update(_ar);
-
-	
 		_win.show();
 		String info = game.toString();
 		JSONObject line;
