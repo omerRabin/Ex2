@@ -112,7 +112,8 @@ public class Ex2 implements Runnable{
      * This method Sort in ascending order the pokemons by their distance from agent(the edges weights)
      * @return
      */
-
+//*************must to update this method. After boaz will answer me if there is importance to the weights. if there is, we need to sort not from src to des, but according to
+    //weight from src of edge to pokemon position!(like i did yet, but check if its valid)
     private ArrayList<CL_Pokemon> sortPokemons(ArrayList<CL_Pokemon> pokemons){
         ArrayList<CL_Pokemon> arr=new ArrayList<CL_Pokemon>();
         int index=0;
