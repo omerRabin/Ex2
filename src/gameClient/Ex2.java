@@ -182,7 +182,7 @@ public class Ex2 implements Runnable{
                         }
                         //************It should be added that once a Pokemon is assigned to an agent the other agents cannot be assigned to it
                     }
-                        game.chooseNextEdge(agentsList.get(index).getID(), dest);
+                        game.chooseNextEdge(agentsList.get(index).getID(), ga.shortestPath(src,dest).get(1).getKey());
                         System.out.println("Agent: "+id+", val: "+v+"   turned to node: "+dest);
                 }
             }
