@@ -18,7 +18,7 @@ public class Ex2 implements Runnable{
     private static Arena _ar;//for //for represent the state of the scenario
     private static int scenario;
     public static void main(String[] a) {
-         //scenario=Integer.parseInt(a[1]);//check how to use it later
+         //scenario=Integer.parseInt(a[1]);
         Thread client = new Thread(new Ex2());
         client.start();
     }
@@ -64,6 +64,7 @@ public class Ex2 implements Runnable{
         String g = game.getGraph();
         String fs = game.getPokemons();
         directed_weighted_graph gg;
+        //not create the new version of graph-with nodes on positions
         GsonBuilder builder=new GsonBuilder();//create the Gson builder
         builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());//using the method in GraphJsonDeserializer class to make the json to graph
         Gson gson=builder.create();//create the json
@@ -71,6 +72,11 @@ public class Ex2 implements Runnable{
 
         _ar = new Arena();//create arena object
         _ar.setGraph(gg);//set arena to work on gg
+        ArrayList<CL_Pokemon> cl_fs = Arena.json2Pokemons(game.getPokemons());//crate a pokemon list from the jason
+        int i=0;
+        while(i<cl_fs.size()){//update the edges that the pokemons exist
+            Arena.updateEdge(cl_fs.get(i++),gg);
+        }
         _ar.setPokemons(Arena.json2Pokemons(fs));//insert the pokemons to the arena
         _win = new GameFrame("Ex2 Game Window");//create window game
         _win.setSize(1000, 700);
@@ -85,7 +91,6 @@ public class Ex2 implements Runnable{
             int numOfAgents = data.getInt("agents");//take the number of agents in the graph
             System.out.println(info);
             System.out.println(game.getPokemons());
-            ArrayList<CL_Pokemon> cl_fs = Arena.json2Pokemons(game.getPokemons());//crate a pokemon list from the jason
             cl_fs=sortPokemons(cl_fs);//sort the pokemons
             for (int a = 0; a < cl_fs.size(); a++) {//inserting pokemons to the area(on edges)
                 Arena.updateEdge(cl_fs.get(a), gg);
@@ -102,6 +107,7 @@ public class Ex2 implements Runnable{
 
                 edge_data e=cl_fs.get(index).get_edge();//take an edge that there is pokemon on it
                 game.addAgent(e.getSrc());
+
                 index++;
             }
         }
@@ -116,22 +122,24 @@ public class Ex2 implements Runnable{
     //weight from src of edge to pokemon position!(like i did yet, but check if its valid)
     private ArrayList<CL_Pokemon> sortPokemons(ArrayList<CL_Pokemon> pokemons){
         ArrayList<CL_Pokemon> arr=new ArrayList<CL_Pokemon>();
-        int index=0;
         while(!pokemons.isEmpty()) {
-            CL_Pokemon bestP=pokemons.remove(index);
-            int internalIndex=0;
-            while (!pokemons.isEmpty()) {
-                if(bestP.get_edge().getWeight()>pokemons.get(internalIndex).get_edge().getWeight()){
-                    bestP=pokemons.get(internalIndex);
-                }
-                    internalIndex++;
-            }
-            index++;
-            arr.add(bestP);
+            CL_Pokemon pok=minPokemonHelp(pokemons);
+            arr.add(pok);
+            pokemons.remove(pok);
         }
         return arr;
     }
-
+private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
+        int i=0;
+    CL_Pokemon bestP=pokemons.get(i);
+    while(i<pokemons.size()) {
+        if(pokemons.get(i).get_edge().getWeight()<bestP.get_edge().getWeight()){
+            bestP=pokemons.get(i);
+        }
+        i++;
+    }
+        return bestP;
+}
     /**
      * Moves each of the agents along the edge,
      * in case the agent is on a node the next destination (next edge) is chosen by shortestPath Algorithm
@@ -142,8 +150,15 @@ public class Ex2 implements Runnable{
     private static void moveAgants(game_service game, directed_weighted_graph gg) {
         //***********************************check if its impossible to involve threads here-no only in main!!!
         String agents=game.getAgents();
-        int index=0;
+        int index=0,index1=0;
+
         ArrayList<CL_Agent> agentsList= (ArrayList<CL_Agent>) Arena.getAgents(agents,gg);
+         /*
+        while(!agentsList.isEmpty()){
+            agentsList.get(index1).set
+        }
+        //------------------------Think how to insert values of curr node and currfruit(or pokemon) for each agent(defined in init method)!!!
+          */
         while(!agentsList.isEmpty()){
             NodeData des=((NodeData)gg.getNode(agentsList.get(index).get_curr_edge().getDest()));
             if(agentsList.get(index).getLocation().distance(des.getLocation())<0.0001){//the agent is close enough to destination node

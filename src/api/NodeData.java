@@ -108,4 +108,5 @@ public class NodeData implements node_data{
     public void setP(parentNode p){
         this.p=p;
     }
+
 }

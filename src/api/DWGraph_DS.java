@@ -53,8 +53,15 @@ public class DWGraph_DS implements directed_weighted_graph{
     @Override
     public void addNode(node_data n) {
         int key=n.getKey();
-        if(graph.containsKey(key)) return;
-        this.graph.put(key,n);//using the put function of HashMap to insert the node in O(1)
+        if(!graph.containsKey(key)) {
+            this.graph.put(key, n);//using the put function of HashMap to insert the node in O(1)
+        }
+        else{//for addNode inGraphJasonDeserializer will work
+            this.getNode(n.getKey()).setTag(n.getTag());
+            this.getNode(n.getKey()).setInfo(n.getInfo());
+            this.getNode(n.getKey()).setLocation(n.getLocation());
+            this.getNode(n.getKey()).setWeight(n.getWeight());
+        }
         this.MC++;
         this.nodeSize++;
     }

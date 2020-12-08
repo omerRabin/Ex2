@@ -13,6 +13,10 @@ public class GraphJsonDeserializer implements JsonDeserializer<directed_weighted
         directed_weighted_graph graph=new DWGraph_DS();//the graph that we create
         JsonArray EdgesJsonObject=jsonObject.get("Edges").getAsJsonArray();//an array of the edges
         JsonArray NodesJsonObject=jsonObject.get("Nodes").getAsJsonArray();//an array of the nodes
+        for(JsonElement j:NodesJsonObject){//Adding the nodes to the graph only by nodes
+            node_data n=new NodeData(j.getAsJsonObject().get("id").getAsInt());//create the node
+            graph.addNode(n);//adding the node to the graph
+        }
         for(JsonElement je:EdgesJsonObject){//loop for edges
             node_data n=new NodeData(je.getAsJsonObject().get("src").getAsInt());//create the current node in the loop
             edge_data edge=new EdgeData(n.getKey(),je.getAsJsonObject().get("dest").getAsInt(),//create the current edge in the loop
