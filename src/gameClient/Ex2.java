@@ -107,7 +107,6 @@ public class Ex2 implements Runnable{
 
                 edge_data e=cl_fs.get(index).get_edge();//take an edge that there is pokemon on it
                 game.addAgent(e.getSrc());
-
                 index++;
             }
         }
@@ -153,12 +152,15 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
         int index=0,index1=0;
 
         ArrayList<CL_Agent> agentsList= (ArrayList<CL_Agent>) Arena.getAgents(agents,gg);
-         /*
-        while(!agentsList.isEmpty()){
-            agentsList.get(index1).set
+/*
+//cant get the edge and pokemon for agent
+        while(index1<agentsList.size()){
+            agentsList.get(index1).update(agentsList.get(index1).getAgentJason(agentsList.get(index1).getID(),game));//update the agents
+                    index1++;
         }
-        //------------------------Think how to insert values of curr node and currfruit(or pokemon) for each agent(defined in init method)!!!
-          */
+
+ */
+//change everyThing here because its not possible to get the edge and pokemon of agent
         while(!agentsList.isEmpty()){
             NodeData des=((NodeData)gg.getNode(agentsList.get(index).get_curr_edge().getDest()));
             if(agentsList.get(index).getLocation().distance(des.getLocation())<0.0001){//the agent is close enough to destination node
@@ -176,17 +178,15 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                     int i=0;
                     while (!psList.isEmpty()){
                         NodeData n=((NodeData)gg.getNode(src));
-                        if(ga.shortestPathDist(src,psList.get(i).get_edge().getSrc())+ (psList.get(i).get_edge().getWeight()*
-                                ((psList.get(i).getLocation().distance(n.getLocation()))/
-                                        (n.getLocation().distance(((NodeData)gg.getNode(des.getKey())).getLocation())))) <bestDes){
-                            //this if check if the sum of weights from src to pokemon is smallest than min
-                            bestDes=ga.shortestPathDist(src,psList.get(i).get_edge().getSrc());
+                        if(ga.shortestPathDist(src,psList.get(i).get_edge().getDest()) <bestDes){
+                            //this if check if the sum of weights from src to (end of pokemon edge) is smallest than min
+                            bestDes=ga.shortestPathDist(src,psList.get(i).get_edge().getSrc());//take the shortest path until the src of the edge that the pokemon exist
                             dest=psList.get(i).get_edge().getSrc();
                             i++;
                         }
                         //************It should be added that once a Pokemon is assigned to an agent the other agents cannot be assigned to it
                     }
-                    game.chooseNextEdge(agentsList.get(index).getID(), ga.shortestPath(src,dest).get(1).getKey());
+                    game.chooseNextEdge(agentsList.get(index).getID(), ga.shortestPath(src,dest).get(1).getKey());//take the next node in the path-that is the neighbor
                     System.out.println("Agent: "+id+", val: "+v+"   turned to node: "+dest);
                 }
             }

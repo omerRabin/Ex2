@@ -1,10 +1,9 @@
 package gameClient;
 
-import api.directed_weighted_graph;
-import api.edge_data;
-import api.geo_location;
-import api.node_data;
+import api.*;
 import gameClient.util.Point3D;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class CL_Agent {
@@ -32,6 +31,25 @@ public class CL_Agent {
 			_id = -1;
 			setSpeed(0);
 		}
+	public String getAgentJason(int id,game_service game) {
+		String AllAgents=game.getAgents();
+
+		try {
+		JSONObject ttt = new JSONObject(AllAgents);
+		JSONArray ags = ttt.getJSONArray("Agents");
+
+			for (int i = 0; i < ags.length(); i++) {
+				JSONObject ag = ags.getJSONObject(i);
+				JSONObject a = ag.getJSONObject("Agent");
+				int Id = a.getInt("id");
+				if (Id == id) {
+					return ag.toString();
+				}
+			}
+		}
+		catch (JSONException e) {e.printStackTrace();}
+		return null;
+	}
 		public void update(String json) {
 			JSONObject line;
 			try {
@@ -52,6 +70,7 @@ public class CL_Agent {
 					this.setSpeed(speed);
 					this.setNextNode(dest);
 					this.setMoney(value);
+					//this.set_curr_edge(_gg.getEdge(src,dest)); cant get the edge
 				}
 			}
 			catch(Exception e) {
@@ -166,4 +185,10 @@ public class CL_Agent {
 		public void set_sg_dt(long _sg_dt) {
 			this._sg_dt = _sg_dt;
 		}
+		/*
+		public void set_curr_edge(edge_data e){
+			this._curr_edge=e;
+		}
+		//cant get the edge
+		 */
 	}

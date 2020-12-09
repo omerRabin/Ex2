@@ -29,6 +29,8 @@ public class SimpleGameClient {
 		System.out.println(info);
 		System.out.println(g);
 		System.out.println(game.getPokemons());
+		System.out.println(game.getAgents());
+
 		int src_node = 0;  // arbitrary node, you should start at one of the fruits
 		game.addAgent(src_node);
 		game.startGame();
