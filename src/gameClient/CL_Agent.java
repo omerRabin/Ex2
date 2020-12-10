@@ -31,12 +31,13 @@ public class CL_Agent {
 			_id = -1;
 			setSpeed(0);
 		}
-	public String getAgentJason(int id,game_service game) {
-		String AllAgents=game.getAgents();
+
+	public static String getAgentJason(int id, game_service game) {
+		String AllAgents = game.getAgents();
 
 		try {
-		JSONObject ttt = new JSONObject(AllAgents);
-		JSONArray ags = ttt.getJSONArray("Agents");
+			JSONObject ttt = new JSONObject(AllAgents);
+			JSONArray ags = ttt.getJSONArray("Agents");
 
 			for (int i = 0; i < ags.length(); i++) {
 				JSONObject ag = ags.getJSONObject(i);
@@ -46,10 +47,12 @@ public class CL_Agent {
 					return ag.toString();
 				}
 			}
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
-		catch (JSONException e) {e.printStackTrace();}
 		return null;
 	}
+
 		public void update(String json) {
 			JSONObject line;
 			try {
@@ -70,7 +73,7 @@ public class CL_Agent {
 					this.setSpeed(speed);
 					this.setNextNode(dest);
 					this.setMoney(value);
-					//this.set_curr_edge(_gg.getEdge(src,dest)); cant get the edge
+					this.set_curr_edge(_gg.getEdge(src,dest));
 				}
 			}
 			catch(Exception e) {
@@ -185,10 +188,9 @@ public class CL_Agent {
 		public void set_sg_dt(long _sg_dt) {
 			this._sg_dt = _sg_dt;
 		}
-		/*
+
 		public void set_curr_edge(edge_data e){
 			this._curr_edge=e;
 		}
-		//cant get the edge
-		 */
+
 	}

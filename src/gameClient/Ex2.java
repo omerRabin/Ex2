@@ -96,18 +96,12 @@ public class Ex2 implements Runnable{
                 Arena.updateEdge(cl_fs.get(a), gg);
             }
             for(int a = 0;a<numOfAgents;a++){//inserting agents to the area(on nodes)
-                /* //---------------------i dont know if i need to use in getType in my implement so i left boaz code in document
                 //********************************think how to insert efficiently the agents
                 int ind = a%cl_fs.size();
                 CL_Pokemon c = cl_fs.get(ind);
                 int nn = c.get_edge().getDest();
                 if(c.getType()<0 ) {nn = c.get_edge().getSrc();}
                 game.addAgent(nn);
-                 */
-
-                edge_data e=cl_fs.get(index).get_edge();//take an edge that there is pokemon on it
-                game.addAgent(e.getSrc());
-                index++;
             }
         }
         catch (JSONException e) {e.printStackTrace();}
@@ -139,6 +133,50 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
     }
         return bestP;
 }
+//-----------------------------------------------------------------------
+    private static CL_Agent getAgent(int id,game_service game,directed_weighted_graph gg){
+        List<CL_Agent> l=Arena.getAgents(game.getAgents(),gg);
+        int i=0;
+        while(i<l.size()){
+            if(l.get(i).getID()==id) return l.get(i);
+            i++;
+        }
+        return null;
+    }
+    //-------------------------------------------------------------------
+    private static CL_Pokemon bestPok(CL_Agent ag,game_service game,directed_weighted_graph gg){
+        ArrayList<CL_Pokemon> ps=Arena.json2Pokemons(game.getPokemons());
+        CL_Pokemon bestP=null;
+        double bestShortestPath=Double.POSITIVE_INFINITY;
+        DWGraph_Algo ga=new DWGraph_Algo();
+        int i=0;
+        ga.init(gg);
+        for (int a = 0; a < ps.size(); a++) {//inserting pokemons to the area(on edges)
+            Arena.updateEdge(ps.get(a), gg);
+        }
+        double sum=0;
+        while(i<ps.size()){
+            if(ag.getSrcNode()==ps.get(i).get_edge().getDest()) continue;
+            sum=ga.shortestPathDist(ag.getSrcNode(),ps.get(i).get_edge().getDest());
+            if(sum!=-1) continue;
+                if (sum < bestShortestPath) {
+                    bestShortestPath = sum;
+                    bestP = ps.get(i);
+                }
+            i++;
+        }
+        return bestP;
+    }
+//------------------------------------------------------------------------
+    private static CL_Agent takePokemon(game_service game,int id,directed_weighted_graph gg){
+    CL_Agent ag=getAgent(id,game,gg);
+    CL_Pokemon bestP=bestPok(ag,game,gg);
+    if(ag!=null){
+        ag.set_curr_fruit(bestP);
+    }
+    return ag;
+    }
+    //------------------------------------------------------------------
     /**
      * Moves each of the agents along the edge,
      * in case the agent is on a node the next destination (next edge) is chosen by shortestPath Algorithm
@@ -149,60 +187,52 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
     private static void moveAgants(game_service game, directed_weighted_graph gg) {
         //***********************************check if its impossible to involve threads here-no only in main!!!
         String agents=game.getAgents();
-        int index=0,index1=0;
-
+        int index1=0;
+        //ArrayList<CL_Pokemon> pokEat=//***********check how to make sure that two agents dont go to the same pokemon
         ArrayList<CL_Agent> agentsList= (ArrayList<CL_Agent>) Arena.getAgents(agents,gg);
-/*
-//cant get the edge and pokemon for agent
-        while(index1<agentsList.size()){
-            agentsList.get(index1).update(agentsList.get(index1).getAgentJason(agentsList.get(index1).getID(),game));//update the agents
-                    index1++;
-        }
+        int counterNotCome=0;
+        while (!agentsList.isEmpty()) {
+            CL_Agent currAg = agentsList.get(index1);
+            if (agentsList.get(index1).getNextNode() == -1) {
+                int id = currAg.getID();
 
- */
-//change everyThing here because its not possible to get the edge and pokemon of agent
-        while(!agentsList.isEmpty()){
-            NodeData des=((NodeData)gg.getNode(agentsList.get(index).get_curr_edge().getDest()));
-            if(agentsList.get(index).getLocation().distance(des.getLocation())<0.0001){//the agent is close enough to destination node
-                int id = agentsList.get(index).getID();
-                int dest = agentsList.get(index).getNextNode();
-                int src = agentsList.get(index).getSrcNode();
-                double v = agentsList.get(index).getValue();
-                if(dest==-1){
-                    DWGraph_Algo ga=new DWGraph_Algo();
-                    ga.init(gg);
-
-                    String ps = game.getPokemons();//string of pokemons
-                    List<CL_Pokemon> psList = Arena.json2Pokemons(ps);//pokemons list
-                    double bestDes=Double.POSITIVE_INFINITY;
-                    int i=0;
-                    while (!psList.isEmpty()){
-                        NodeData n=((NodeData)gg.getNode(src));
-                        if(ga.shortestPathDist(src,psList.get(i).get_edge().getDest()) <bestDes){
-                            //this if check if the sum of weights from src to (end of pokemon edge) is smallest than min
-                            bestDes=ga.shortestPathDist(src,psList.get(i).get_edge().getSrc());//take the shortest path until the src of the edge that the pokemon exist
-                            dest=psList.get(i).get_edge().getSrc();
-                            i++;
-                        }
-                        //************It should be added that once a Pokemon is assigned to an agent the other agents cannot be assigned to it
+                currAg=takePokemon(game, id, gg);
+                DWGraph_Algo ga = new DWGraph_Algo();
+                ga.init(gg);
+                double v = currAg.getValue();
+                int dest = ga.shortestPath(currAg.getSrcNode(),
+                        currAg.get_curr_fruit().get_edge().getDest()).get(1).getKey();
+                //******check if it Does not contradict the first inserting of the agents
+                game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
+                currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
+                System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
+                //=======================================================================
+            }
+                if (currAg.get_curr_edge() == currAg.get_curr_fruit().get_edge()) {//the case that we exist in the edge that has pokemon
+                    if (currAg.get_curr_fruit().getLocation().close2equals(currAg.getLocation())) {//the agent is close enough to the pokemon
+                        String lg = game.move();//doing move
+                        List<CL_Agent> log = Arena.getAgents(lg, gg);
+                        _ar.setAgents(log);//update the agents on the arena
+                        String fs = game.getPokemons();
+                        List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
+                        _ar.setPokemons(ffs);//update the new pokemons to the edges
+                        //********************************************check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
                     }
-                    game.chooseNextEdge(agentsList.get(index).getID(), ga.shortestPath(src,dest).get(1).getKey());//take the next node in the path-that is the neighbor
-                    System.out.println("Agent: "+id+", val: "+v+"   turned to node: "+dest);
-                }
-            }
-            if(agentsList.get(index).get_curr_edge()==agentsList.get(index).get_curr_fruit().get_edge()) {//the case that we exist in the edge that has pokemon
-                if (agentsList.get(index).get_curr_fruit().getLocation().close2equals(agentsList.get(index).getLocation())) {//the agent is close enough to the pokemon
-                    String lg = game.move();//doing move
-                    List<CL_Agent> log = Arena.getAgents(lg, gg);
-                    _ar.setAgents(log);//update the agents on the arena
-                    String fs = game.getPokemons();
-                    List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
-                    _ar.setPokemons(ffs);//update the new pokemons to the edges
-                    //********************************************check if break here improves the algorithm!
-                }
-            }
-                index++;
-        }
+                    else{
+                        counterNotCome++;
+                    }
 
-    }
+                }
+                index1++;
+
+        }
+        if(counterNotCome==0) {
+            String lg = game.move();//doing move
+            List<CL_Agent> log = Arena.getAgents(lg, gg);
+            _ar.setAgents(log);//update the agents on the arena
+            String fs = game.getPokemons();
+            List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
+            _ar.setPokemons(ffs);//update the new pokemons to the edges
+        }
+        }
 }
