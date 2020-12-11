@@ -4,6 +4,7 @@ import api.directed_weighted_graph;
 import api.edge_data;
 import api.geo_location;
 import api.node_data;
+import com.google.gson.JsonObject;
 import gameClient.util.Point3D;
 import gameClient.util.Range;
 import gameClient.util.Range2D;
@@ -86,6 +87,30 @@ public class Arena {
 				CL_Agent c = new CL_Agent(gg,0);
 				c.update(ags.get(i).toString());
 				ans.add(c);
+			}
+			//= getJSONArray("Agents");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return ans;
+	}
+	public static List<CL_Agent> getAgentsPerAg(String aa,String ag, directed_weighted_graph gg) {
+		ArrayList<CL_Agent> ans = new ArrayList<CL_Agent>();
+
+		try {
+			JSONObject ttt = new JSONObject(aa);
+			JSONArray ags = ttt.getJSONArray("Agents");
+			JSONObject a=new JSONObject(ag);
+			for(int i=0;i<ags.length();i++) {
+				CL_Agent c = new CL_Agent(gg,0);
+				if(ags.getJSONObject(i).getJSONObject("Agent").getInt("id")==a.getJSONObject("Agent").getInt("id")){
+					c.update(ag.toString());
+					ans.add(c);
+				}
+				else {
+					c.update(ags.get(i).toString());
+					ans.add(c);
+				}
 			}
 			//= getJSONArray("Agents");
 		} catch (JSONException e) {

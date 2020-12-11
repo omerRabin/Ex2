@@ -25,7 +25,7 @@ public class Ex2 implements Runnable{
     @Override
     public void run() {
        // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(2); //get the scenario
+        game_service game = Game_Server_Ex2.getServer(0); //get the scenario
 
         //	int id = 211510631;
         //	game.login(id);
@@ -156,9 +156,15 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
         }
         double sum=0;
         while(i<ps.size()){
-            if(ag.getSrcNode()==ps.get(i).get_edge().getDest()) continue;
+            if(ag.getSrcNode()==ps.get(i).get_edge().getDest()) {
+                i++;
+                continue;
+            }
             sum=ga.shortestPathDist(ag.getSrcNode(),ps.get(i).get_edge().getDest());
-            if(sum!=-1) continue;
+            if(sum==-1) {
+                i++;
+                continue;
+            }
                 if (sum < bestShortestPath) {
                     bestShortestPath = sum;
                     bestP = ps.get(i);
@@ -191,9 +197,12 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
         //ArrayList<CL_Pokemon> pokEat=//***********check how to make sure that two agents dont go to the same pokemon
         ArrayList<CL_Agent> agentsList= (ArrayList<CL_Agent>) Arena.getAgents(agents,gg);
         int counterNotCome=0;
-        while (!agentsList.isEmpty()) {
+        while (index1<agentsList.size()) {
             CL_Agent currAg = agentsList.get(index1);
-            if (agentsList.get(index1).getNextNode() == -1) {
+            //----------------
+            //currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
+            //----------------
+            if (currAg.getNextNode() == -1) {
                 int id = currAg.getID();
 
                 currAg=takePokemon(game, id, gg);
@@ -205,9 +214,21 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                 //******check if it Does not contradict the first inserting of the agents
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
+                //-------------------------------------
+                List<CL_Agent> Log = Arena.getAgentsPerAg(game.getAgents(),CL_Agent.getAgentJason(currAg.getID(),game), gg);//update the egent in the list agents in game
+                Log=Arena.getAgents(game.getAgents(),gg);
+
+                _ar.setAgents(Log);//update the agents on the arena
+                //-----------------------------------------
                 System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
                 //=======================================================================
             }
+
+            else{// give the current edge
+                //----------------------------
+                currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
+            }
+            currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));//update the pokemon
                 if (currAg.get_curr_edge() == currAg.get_curr_fruit().get_edge()) {//the case that we exist in the edge that has pokemon
                     if (currAg.get_curr_fruit().getLocation().close2equals(currAg.getLocation())) {//the agent is close enough to the pokemon
                         String lg = game.move();//doing move
@@ -217,22 +238,19 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                         List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
                         _ar.setPokemons(ffs);//update the new pokemons to the edges
                         //********************************************check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
-                    }
-                    else{
+                    } else {
                         counterNotCome++;
                     }
-
-                }
-                index1++;
-
+            }
+            index1++;
         }
-        if(counterNotCome==0) {
+        if(counterNotCome==agentsList.size()) {
             String lg = game.move();//doing move
-            List<CL_Agent> log = Arena.getAgents(lg, gg);
-            _ar.setAgents(log);//update the agents on the arena
-            String fs = game.getPokemons();
-            List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
-            _ar.setPokemons(ffs);//update the new pokemons to the edges
+                List<CL_Agent> log = Arena.getAgents(lg, gg);
+                _ar.setAgents(log);//update the agents on the arena
+                String fs = game.getPokemons();
+                List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
+                _ar.setPokemons(ffs);//update the new pokemons to the edges
         }
         }
 }

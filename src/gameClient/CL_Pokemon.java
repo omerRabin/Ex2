@@ -1,7 +1,12 @@
 package gameClient;
+
+import api.directed_weighted_graph;
 import api.edge_data;
+import api.game_service;
 import gameClient.util.Point3D;
 import org.json.JSONObject;
+
+import java.util.List;
 
 public class CL_Pokemon {
 	private edge_data _edge;
@@ -19,6 +24,21 @@ public class CL_Pokemon {
 		_pos = p;
 		min_dist = -1;
 		min_ro = -1;
+	}
+	public static CL_Pokemon getPokemon(CL_Agent ag, game_service game,directed_weighted_graph gg){
+		edge_data e=ag.get_curr_edge();
+		List<CL_Pokemon> l=Arena.json2Pokemons(game.getPokemons());
+		int j=0;
+		while(j<l.size()){
+			Arena.updateEdge(l.get(j),gg);
+			j++;
+		}
+		int i=0;
+		while(i<l.size()){
+			if(e==l.get(i).get_edge()) return l.get(i);
+			i++;
+		}
+		return null;
 	}
 	public static CL_Pokemon init_from_json(String json) {
 		CL_Pokemon ans = null;
