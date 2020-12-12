@@ -204,7 +204,6 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
             //----------------
             if (currAg.getNextNode() == -1) {
                 int id = currAg.getID();
-
                 currAg=takePokemon(game, id, gg);
                 DWGraph_Algo ga = new DWGraph_Algo();
                 ga.init(gg);
@@ -215,21 +214,23 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
                 //-------------------------------------
+
                 List<CL_Agent> Log = Arena.getAgentsPerAg(game.getAgents(),CL_Agent.getAgentJason(currAg.getID(),game), gg);//update the egent in the list agents in game
                 Log=Arena.getAgents(game.getAgents(),gg);
-
                 _ar.setAgents(Log);//update the agents on the arena
-                //-----------------------------------------
                 System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
                 //=======================================================================
             }
-
             else{// give the current edge
                 //----------------------------
-                currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
+                currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
+
+                //-----------------------
+                //-----------------------------------------
             }
             currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));//update the pokemon
-                if (currAg.get_curr_edge() == currAg.get_curr_fruit().get_edge()) {//the case that we exist in the edge that has pokemon
+            //Arena.updateEdge(CL_Pokemon.getPokemon(currAg,game,gg),gg);
+            if (currAg.get_curr_edge() == currAg.get_curr_fruit().get_edge()) {//the case that we exist in the edge that has pokemon
                     if (currAg.get_curr_fruit().getLocation().close2equals(currAg.getLocation())) {//the agent is close enough to the pokemon
                         String lg = game.move();//doing move
                         List<CL_Agent> log = Arena.getAgents(lg, gg);
@@ -242,15 +243,16 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                         counterNotCome++;
                     }
             }
+            Arena.getAgents(game.getAgents(),gg).get(index1).update(CL_Agent.getAgentJason(currAg.getID(),game));
             index1++;
         }
         if(counterNotCome==agentsList.size()) {
-            String lg = game.move();//doing move
-                List<CL_Agent> log = Arena.getAgents(lg, gg);
-                _ar.setAgents(log);//update the agents on the arena
-                String fs = game.getPokemons();
-                List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
-                _ar.setPokemons(ffs);//update the new pokemons to the edges
+            String lg1 = game.move();//doing move
+                List<CL_Agent> log1 = Arena.getAgents(lg1, gg);
+                _ar.setAgents(log1);//update the agents on the arena
+                String fs1 = game.getPokemons();
+                List<CL_Pokemon> ffs1 = Arena.json2Pokemons(fs1);
+                _ar.setPokemons(ffs1);//update the new pokemons to the edges
         }
         }
 }

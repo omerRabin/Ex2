@@ -29,6 +29,7 @@ public class CL_Pokemon {
 		edge_data e=ag.get_curr_edge();
 		List<CL_Pokemon> l=Arena.json2Pokemons(game.getPokemons());
 		int j=0;
+
 		while(j<l.size()){
 			Arena.updateEdge(l.get(j),gg);
 			j++;
