@@ -157,8 +157,10 @@ public class Arena {
 			j++;
 		}
 		while(i<PokemonsList.size()){
-			if(PokemonsList.get(i).get_edge().getDest()==dest){
-				return PokemonsList.get(i);
+			if(PokemonsList.get(i).get_edge()!=null) {
+				if (PokemonsList.get(i).get_edge().getDest() == dest) {
+					return PokemonsList.get(i);
+				}
 			}
 				i++;
 		}

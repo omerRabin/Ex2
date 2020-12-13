@@ -177,11 +177,13 @@ public class Ex2 implements Runnable{
             if(ps.get(i).getIsDest()){//If the Pokemon has already been captured
                 continue;
             }
-            if(ag.getSrcNode()==ps.get(i).get_edge().getDest()) {
-                i++;
-                continue;
-            }
-            sum=ga.shortestPathDist(ag.getSrcNode(),ps.get(i).get_edge().getDest());
+                if (ag.getSrcNode() == ps.get(i).get_edge().getDest()) {
+                    i++;
+                    continue;
+                }
+
+                sum = ga.shortestPathDist(ag.getSrcNode(), ps.get(i).get_edge().getDest());
+
             if(sum==-1) {
                 i++;
                 continue;
@@ -243,12 +245,11 @@ public class Ex2 implements Runnable{
                     }
                 }
                 else{
-                    if(currAg.get_curr_fruit().get_edge().getSrc()>currAg.get_curr_fruit().get_edge().getDest()){
-                        ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest());
-                    }
-                    else{
-                        ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc());
-                    }
+                        if (currAg.get_curr_fruit().get_edge().getSrc() > currAg.get_curr_fruit().get_edge().getDest()) {
+                            ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getSrc(), currAg.get_curr_fruit().get_edge().getDest());
+                        } else {
+                            ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getDest(), currAg.get_curr_fruit().get_edge().getSrc());
+                        }
                 }
                 double v = currAg.getValue();
                 int dest;
@@ -260,6 +261,7 @@ public class Ex2 implements Runnable{
                     dest = ga.shortestPath(currAg.getSrcNode(),
                             currAg.get_curr_fruit().get_edge().getDest()).get(1).getKey();//we in the edge-go to destination
                 }
+                currAg.get_curr_fruit().setIsDest(true);
                 //******check if it Does not contradict the first inserting of the agents
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
