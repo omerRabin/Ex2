@@ -1,9 +1,6 @@
 package gameClient;
 
-import api.directed_weighted_graph;
-import api.edge_data;
-import api.geo_location;
-import api.node_data;
+import api.*;
 import com.google.gson.JsonObject;
 import gameClient.util.Point3D;
 import gameClient.util.Range;
@@ -151,7 +148,22 @@ public class Arena {
 			}
 		}
 	}
-
+	public static CL_Pokemon getPokemon(int dest,game_service game,directed_weighted_graph gg){
+		List<CL_Pokemon> PokemonsList=Arena.json2Pokemons(game.getPokemons());
+		int i=0;
+		int j=0;
+		while(j<PokemonsList.size()){
+			Arena.updateEdge(PokemonsList.get(j),gg);
+			j++;
+		}
+		while(i<PokemonsList.size()){
+			if(PokemonsList.get(i).get_edge().getDest()==dest){
+				return PokemonsList.get(i);
+			}
+				i++;
+		}
+		return null;
+	}
 	private static boolean isOnEdge(geo_location p, geo_location src, geo_location dest ) {
 
 		boolean ans = false;

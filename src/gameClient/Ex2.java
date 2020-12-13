@@ -18,33 +18,52 @@ public class Ex2 implements Runnable{
     private static Arena _ar;//for //for represent the state of the scenario
     private static int scenario;
     public static void main(String[] a) {
-         //scenario=Integer.parseInt(a[1]);
+        //scenario=Integer.parseInt(a[1]);
         Thread client = new Thread(new Ex2());
         client.start();
     }
     @Override
     public void run() {
-       // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(0); //get the scenario
+        // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
+        game_service game = Game_Server_Ex2.getServer(14); //get the scenario
 
         //	int id = 211510631;
         //	game.login(id);
         String g = game.getGraph();
         String pks = game.getPokemons();
         directed_weighted_graph gg;
-            GsonBuilder builder=new GsonBuilder();//create the Gson builder
-            builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());//using the method in GraphJsonDeserializer class to make the json to graph
-            Gson gson=builder.create();//create the json
-            gg=gson.fromJson(g,directed_weighted_graph.class);//convert the gson to graph from json
-           init(game);
-           game.startGame();
-          _win.setTitle("Ex2 - OOP: My Solution "+game.toString());
-          //----------------------------------------------------------------- from here i need to change everyThing
+        GsonBuilder builder=new GsonBuilder();//create the Gson builder
+        builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());//using the method in GraphJsonDeserializer class to make the json to graph
+        Gson gson=builder.create();//create the json
+        gg=gson.fromJson(g,directed_weighted_graph.class);//convert the gson to graph from json
+        init(game);
+        game.startGame();
+        _win.setTitle("Ex2 - OOP: My Solution "+game.toString());
+        //----------------------------------------------------------------- from here i need to change everyThing
         int ind=0;
         long dt=100;
-
         while(game.isRunning()) {
-            moveAgants(game, gg);
+            boolean wasMoved=false;
+            List<CL_Agent> AgentsList=Arena.getAgents(game.getAgents(),gg);
+            int k=0;
+            while(k<AgentsList.size()){
+                CL_Agent currAg=AgentsList.get(k);
+                if(currAg.isMoving()) {
+                    int dest=currAg.getNextNode();
+                    currAg.set_curr_fruit(Arena.getPokemon(dest,game,gg));
+                    if(currAg.get_curr_fruit()!=null) {//it means we in the edge of the pokemon
+                        if (currAg.get_curr_fruit().getLocation().close2equals(currAg.getLocation())) {//the agent is close enough to the pokemon
+                            moveAgants(game, gg);
+                            wasMoved = true;
+                            //****check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
+                        }
+                    }
+                }
+                k++;
+            }
+            if(!wasMoved) {
+                moveAgants(game, gg);
+            }
             try {
                 if(ind%3==0) {_win.repaint();}
                 Thread.sleep(dt);
@@ -122,18 +141,18 @@ public class Ex2 implements Runnable{
         }
         return arr;
     }
-private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
+    private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
         int i=0;
-    CL_Pokemon bestP=pokemons.get(i);
-    while(i<pokemons.size()) {
-        if(pokemons.get(i).get_edge().getWeight()<bestP.get_edge().getWeight()){
-            bestP=pokemons.get(i);
+        CL_Pokemon bestP=pokemons.get(i);
+        while(i<pokemons.size()) {
+            if(pokemons.get(i).get_edge().getWeight()<bestP.get_edge().getWeight()){
+                bestP=pokemons.get(i);
+            }
+            i++;
         }
-        i++;
-    }
         return bestP;
-}
-//-----------------------------------------------------------------------
+    }
+    //-----------------------------------------------------------------------
     private static CL_Agent getAgent(int id,game_service game,directed_weighted_graph gg){
         List<CL_Agent> l=Arena.getAgents(game.getAgents(),gg);
         int i=0;
@@ -156,6 +175,7 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
         }
         double sum=0;
         while(i<ps.size()){
+
             if(ag.getSrcNode()==ps.get(i).get_edge().getDest()) {
                 i++;
                 continue;
@@ -165,22 +185,22 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                 i++;
                 continue;
             }
-                if (sum < bestShortestPath) {
-                    bestShortestPath = sum;
-                    bestP = ps.get(i);
-                }
+            if (sum < bestShortestPath) {
+                bestShortestPath = sum;
+                bestP = ps.get(i);
+            }
             i++;
         }
         return bestP;
     }
-//------------------------------------------------------------------------
+    //------------------------------------------------------------------------
     private static CL_Agent takePokemon(game_service game,int id,directed_weighted_graph gg){
-    CL_Agent ag=getAgent(id,game,gg);
-    CL_Pokemon bestP=bestPok(ag,game,gg);
-    if(ag!=null){
-        ag.set_curr_fruit(bestP);
-    }
-    return ag;
+        CL_Agent ag=getAgent(id,game,gg);
+        CL_Pokemon bestP=bestPok(ag,game,gg);
+        if(ag!=null){
+            ag.set_curr_fruit(bestP);
+        }
+        return ag;
     }
     //------------------------------------------------------------------
     /**
@@ -192,19 +212,23 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
      */
     private static void moveAgants(game_service game, directed_weighted_graph gg) {
         //***********************************check if its impossible to involve threads here-no only in main!!!
-        String agents=game.getAgents();
-        int index1=0;
+        String agents = game.getAgents();
+        int index1 = 0;
         //ArrayList<CL_Pokemon> pokEat=//***********check how to make sure that two agents dont go to the same pokemon
-        ArrayList<CL_Agent> agentsList= (ArrayList<CL_Agent>) Arena.getAgents(agents,gg);
-        int counterNotCome=0;
-        while (index1<agentsList.size()) {
+        ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);
+        while (index1 < agentsList.size()) {
             CL_Agent currAg = agentsList.get(index1);
             //----------------
             //currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
             //----------------
             if (currAg.getNextNode() == -1) {
                 int id = currAg.getID();
-                currAg=takePokemon(game, id, gg);
+                while (true) {
+                    currAg = takePokemon(game, id, gg);
+                    if (currAg.get_curr_fruit() != null) {
+                        break;
+                    }
+                }
                 DWGraph_Algo ga = new DWGraph_Algo();
                 ga.init(gg);
                 double v = currAg.getValue();
@@ -215,44 +239,23 @@ private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
                 //-------------------------------------
 
-                List<CL_Agent> Log = Arena.getAgentsPerAg(game.getAgents(),CL_Agent.getAgentJason(currAg.getID(),game), gg);//update the egent in the list agents in game
-                Log=Arena.getAgents(game.getAgents(),gg);
+                List<CL_Agent> Log = Arena.getAgentsPerAg(game.getAgents(), CL_Agent.getAgentJason(currAg.getID(), game), gg);//update the egent in the list agents in game
+                Log = Arena.getAgents(game.getAgents(), gg);
                 _ar.setAgents(Log);//update the agents on the arena
                 System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
                 //=======================================================================
-            }
-            else{// give the current edge
+            } else {// give the current edge
                 //----------------------------
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
-
-                //-----------------------
-                //-----------------------------------------
             }
-            currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));//update the pokemon
             //Arena.updateEdge(CL_Pokemon.getPokemon(currAg,game,gg),gg);
-            if (currAg.get_curr_edge() == currAg.get_curr_fruit().get_edge()) {//the case that we exist in the edge that has pokemon
-                    if (currAg.get_curr_fruit().getLocation().close2equals(currAg.getLocation())) {//the agent is close enough to the pokemon
-                        String lg = game.move();//doing move
-                        List<CL_Agent> log = Arena.getAgents(lg, gg);
-                        _ar.setAgents(log);//update the agents on the arena
-                        String fs = game.getPokemons();
-                        List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
-                        _ar.setPokemons(ffs);//update the new pokemons to the edges
-                        //********************************************check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
-                    } else {
-                        counterNotCome++;
-                    }
-            }
-            Arena.getAgents(game.getAgents(),gg).get(index1).update(CL_Agent.getAgentJason(currAg.getID(),game));
             index1++;
         }
-        if(counterNotCome==agentsList.size()) {
-            String lg1 = game.move();//doing move
-                List<CL_Agent> log1 = Arena.getAgents(lg1, gg);
-                _ar.setAgents(log1);//update the agents on the arena
-                String fs1 = game.getPokemons();
-                List<CL_Pokemon> ffs1 = Arena.json2Pokemons(fs1);
-                _ar.setPokemons(ffs1);//update the new pokemons to the edges
-        }
-        }
+        String lg = game.move();//doing move
+        List<CL_Agent> log = Arena.getAgents(lg, gg);
+        _ar.setAgents(log);//update the agents on the arena
+        String fs = game.getPokemons();
+        List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
+        _ar.setPokemons(ffs);//update the new pokemons to the edges
+    }
 }
