@@ -15,7 +15,7 @@ public class CL_Pokemon {
 	private Point3D _pos;
 	private double min_dist;
 	private int min_ro;
-	
+	private boolean isDest;
 	public CL_Pokemon(Point3D p, int t, double v, double s, edge_data e) {
 		_type = t;
 	//	_speed = s;
@@ -82,5 +82,11 @@ public class CL_Pokemon {
 
 	public void setMin_ro(int min_ro) {
 		this.min_ro = min_ro;
+	}
+	public boolean getIsDest(){
+		return this.isDest;
+	}
+	public void setIsDest(boolean flag){
+		this.isDest=flag;
 	}
 }

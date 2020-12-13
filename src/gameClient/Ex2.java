@@ -25,8 +25,7 @@ public class Ex2 implements Runnable{
     @Override
     public void run() {
         // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(14); //get the scenario
-
+        game_service game = Game_Server_Ex2.getServer(0); //get the scenario
         //	int id = 211510631;
         //	game.login(id);
         String g = game.getGraph();
@@ -46,24 +45,31 @@ public class Ex2 implements Runnable{
             boolean wasMoved=false;
             List<CL_Agent> AgentsList=Arena.getAgents(game.getAgents(),gg);
             int k=0;
+            /*
+            if(CL_Agent.DesIdNeeded(game,gg)){//if there is agent without target
+                moveAgants(game,gg);
+            }//after this it's guaranteed that all agents is moving on edge
+             */
+            AgentsList=Arena.getAgents(game.getAgents(),gg);//update agents after given des to nodes that didn't have
             while(k<AgentsList.size()){
                 CL_Agent currAg=AgentsList.get(k);
-                if(currAg.isMoving()) {
                     int dest=currAg.getNextNode();
                     currAg.set_curr_fruit(Arena.getPokemon(dest,game,gg));
                     if(currAg.get_curr_fruit()!=null) {//it means we in the edge of the pokemon
+                        //------------
+                        System.out.println(currAg.getLocation());
+                        //------------
                         if (currAg.get_curr_fruit().getLocation().close2equals(currAg.getLocation())) {//the agent is close enough to the pokemon
+                            System.out.println("its good");
                             moveAgants(game, gg);
+                            currAg.get_curr_fruit().setIsDest(false);//pokemon can be eaten now
                             wasMoved = true;
                             //****check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
                         }
                     }
-                }
                 k++;
             }
-            if(!wasMoved) {
-                moveAgants(game, gg);
-            }
+            if(!wasMoved) moveAgants(game,gg);
             try {
                 if(ind%3==0) {_win.repaint();}
                 Thread.sleep(dt);
@@ -121,11 +127,11 @@ public class Ex2 implements Runnable{
                 int nn = c.get_edge().getDest();
                 if(c.getType()<0 ) {nn = c.get_edge().getSrc();}
                 game.addAgent(nn);
+                c.setIsDest(true);
             }
         }
         catch (JSONException e) {e.printStackTrace();}
     }
-
     /**
      * This method Sort in ascending order the pokemons by their distance from agent(the edges weights)
      * @return
@@ -175,7 +181,9 @@ public class Ex2 implements Runnable{
         }
         double sum=0;
         while(i<ps.size()){
-
+            if(ps.get(i).getIsDest()){//If the Pokemon has already been captured
+                continue;
+            }
             if(ag.getSrcNode()==ps.get(i).get_edge().getDest()) {
                 i++;
                 continue;

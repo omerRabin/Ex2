@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 public class CL_Agent {
 		public static final double EPS = 0.0001;
 		private static int _count = 0;
@@ -106,6 +108,17 @@ public class CL_Agent {
 			}
 			else {_curr_edge = null;}
 			return ans;
+		}
+		public static boolean DesIdNeeded(game_service game,directed_weighted_graph gg){
+			List<CL_Agent> l=Arena.getAgents(game.getAgents(),gg);
+			int i=0;
+			while(i<l.size()){
+				if(l.get(i).getNextNode()==-1){
+					return true;
+				}
+					i++;
+			}
+			return false;
 		}
 		public void setCurrNode(int src) {
 			this._curr_node = _gg.getNode(src);
