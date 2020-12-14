@@ -25,7 +25,7 @@ public class Ex2 implements Runnable{
     @Override
     public void run() {
         // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(1); //get the scenario
+        game_service game = Game_Server_Ex2.getServer(13); //get the scenario
         //	int id = 211510631;
         //	game.login(id);
         String g = game.getGraph();
@@ -40,13 +40,15 @@ public class Ex2 implements Runnable{
         _win.setTitle("Ex2 - OOP: My Solution "+game.toString());
         //----------------------------------------------------------------- from here i need to change everyThing
         int ind=0;
-        long dt=100;
+        long dt;
         while(game.isRunning()) {
             boolean wasMoved=false;
             List<CL_Agent> AgentsList=Arena.getAgents(game.getAgents(),gg);
             int k=0;
+            dt=100;
             while(k<AgentsList.size()){
                 CL_Agent currAg=AgentsList.get(k);
+                if(currAg.getSpeed()>3)dt=85;
                     int dest=currAg.getNextNode();
                     currAg.set_curr_fruit(Arena.getPokemon(dest,game,gg));
                     if(currAg.get_curr_fruit()!=null) {//it means we in the edge of the pokemon
@@ -95,7 +97,8 @@ public class Ex2 implements Runnable{
         ArrayList<CL_Pokemon> cl_fs = Arena.json2Pokemons(game.getPokemons());//crate a pokemon list from the jason
         int i=0;
         while(i<cl_fs.size()){//update the edges that the pokemons exist
-            Arena.updateEdge(cl_fs.get(i++),gg);
+            Arena.updateEdge(cl_fs.get(i),gg);
+            i++;
         }
         _ar.setPokemons(Arena.json2Pokemons(fs));//insert the pokemons to the arena
         _win = new GameFrame("Ex2 Game Window");//create window game
@@ -111,19 +114,30 @@ public class Ex2 implements Runnable{
             int numOfAgents = data.getInt("agents");//take the number of agents in the graph
             System.out.println(info);
             System.out.println(game.getPokemons());
+            System.out.println(game.getGraph());
             cl_fs=sortPokemons(cl_fs);//sort the pokemons
             for (int a = 0; a < cl_fs.size(); a++) {//inserting pokemons to the area(on edges)
                 Arena.updateEdge(cl_fs.get(a), gg);
             }
             for(int a = 0;a<numOfAgents;a++){//inserting agents to the area(on nodes)
                 //********************************think how to insert efficiently the agents
-                int ind = a%cl_fs.size();
-                CL_Pokemon c = cl_fs.get(ind);
+                CL_Pokemon c = cl_fs.get(a);
                 int nn = c.get_edge().getDest();
-                if(c.getType()<0 ) {nn = c.get_edge().getSrc();}
-                game.addAgent(nn);
+                int ns=c.get_edge().getSrc();
+                if(nn>ns&& c.getType()>0){
+                    game.addAgent(ns);
+                }
+               else if(nn<ns&&c.getType()>0){
+                    game.addAgent(nn);
+                }
+               else if(nn>ns&&c.getType()<0){
+                    game.addAgent(nn);
+                }
+                else if(nn<ns&&c.getType()<0){
+                    game.addAgent(ns);
+                   }
                 c.setIsDest(true);
-            }
+                }
         }
         catch (JSONException e) {e.printStackTrace();}
     }
@@ -231,28 +245,37 @@ public class Ex2 implements Runnable{
         String agents = game.getAgents();
         int index1 = 0;
         int count=0;
-        //ArrayList<CL_Pokemon> pokEat=//***********check how to make sure that two agents dont go to the same pokemon
+
         ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);
         while (index1 < agentsList.size()) {
             CL_Agent currAg = agentsList.get(index1);
-            //----------------
-            //currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
-            //----------------
+            currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
             if (currAg.getNextNode() == -1) {//we arrived to new node
                 int id = currAg.getID();
-                //while (true) {
-                //-----------------------------------------------------
 
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
                 currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));
                 if(count==0) {
                     moveInit(game, gg);
-                    currAg.update(CL_Agent.getAgentJason(currAg.getID(),game));//update edge
-                    currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));//update pokemon
+                    List<CL_Agent> la=Arena.getAgents(game.getAgents(),gg);
+                    for(int i=0;i<la.size();i++) {
+                        la.get(i).update(CL_Agent.getAgentJason(la.get(i).getID(), game));//update edge
+                        la.get(i).set_curr_fruit(CL_Pokemon.getPokemon(la.get(i), game, gg));//update pokemon
+                    }
                 }
-                    if (currAg.get_curr_fruit()==null) {
+                currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update edge
+                currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg, game, gg));//update pokemon
+                    if (currAg.get_curr_fruit()!=null) {
+                        if(!currAg.get_curr_fruit().getIsDest())
+                        {
+                            currAg = takePokemon(game, id, gg);
+                        }
+                    }
+                    else
+                    {
                         currAg = takePokemon(game, id, gg);
                     }
+
                     count++;
                 //------------------------------------------------------
                        // if (currAg.get_curr_fruit() != null) {
@@ -300,6 +323,7 @@ public class Ex2 implements Runnable{
                 }
                 double v = currAg.getValue();
                 int dest;
+
                 if(currAg.getSrcNode()!=currAg.get_curr_fruit().get_edge().getSrc()) {//we go to src
                      dest= ga.shortestPath(currAg.getSrcNode(),
                             currAg.get_curr_fruit().get_edge().getSrc()).get(1).getKey();
@@ -325,7 +349,6 @@ public class Ex2 implements Runnable{
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
                 //-------------------------------------
-
                 List<CL_Agent> Log = Arena.getAgentsPerAg(game.getAgents(), CL_Agent.getAgentJason(currAg.getID(), game), gg);//update the egent in the list agents in game
                 Log = Arena.getAgents(game.getAgents(), gg);
                 _ar.setAgents(Log);//update the agents on the arena
