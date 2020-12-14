@@ -25,6 +25,22 @@ public class CL_Pokemon {
 		min_dist = -1;
 		min_ro = -1;
 	}
+	public static int getStartDes(CL_Agent ag,game_service game,directed_weighted_graph gg){
+		List<CL_Pokemon> l=Arena.json2Pokemons(game.getPokemons());
+		int j=0;
+		while(j<l.size()){
+			Arena.updateEdge(l.get(j),gg);
+			j++;
+		}
+		int i=0;
+		while(i<l.size()){
+			if(l.get(i).get_edge().getSrc()==ag.getSrcNode()){
+				return l.get(i).get_edge().getDest();
+			}
+			i++;
+		}
+		return -1;
+	}
 	public static CL_Pokemon getPokemon(CL_Agent ag, game_service game,directed_weighted_graph gg){
 		edge_data e=ag.get_curr_edge();
 		List<CL_Pokemon> l=Arena.json2Pokemons(game.getPokemons());

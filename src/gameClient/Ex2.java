@@ -53,7 +53,7 @@ public class Ex2 implements Runnable{
                         //------------
                         if(currAg.get_curr_fruit().getLocation().distance(currAg.getLocation())<0.01){
                             moveAgants(game, gg);
-                            currAg.get_curr_fruit().setIsDest(false);//pokemon can be eaten now
+                                currAg.get_curr_fruit().setIsDest(false);//pokemon can be eaten now
                             wasMoved = true;
                             //****check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
                         }
@@ -61,7 +61,9 @@ public class Ex2 implements Runnable{
                     }
                 k++;
             }
-            if(!wasMoved) moveAgants(game,gg);
+            if(!wasMoved) {
+                moveAgants(game,gg);
+            }
 
             try {
                 if(ind%3==0) {_win.repaint();}
@@ -191,6 +193,7 @@ public class Ex2 implements Runnable{
             if (sum < bestShortestPath) {
                 bestShortestPath = sum;
                 bestP = ps.get(i);
+                //System.out.println("The pok des is:"+ bestP.getIsDest());
             }
             i++;
         }
@@ -206,6 +209,16 @@ public class Ex2 implements Runnable{
         return ag;
     }
     //------------------------------------------------------------------
+    private static void moveInit(game_service game,directed_weighted_graph gg){
+        String agents = game.getAgents();
+        ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);
+        int index1 = 0;
+        while (index1 < agentsList.size()) {
+            CL_Agent currAg = agentsList.get(index1);
+            game.chooseNextEdge(currAg.getID(),CL_Pokemon.getStartDes(currAg,game,gg));
+            index1++;
+        }
+    }
     /**
      * Moves each of the agents along the edge,
      * in case the agent is on a node the next destination (next edge) is chosen by shortestPath Algorithm
@@ -217,6 +230,7 @@ public class Ex2 implements Runnable{
         //***********************************check if its impossible to involve threads here-no only in main!!!
         String agents = game.getAgents();
         int index1 = 0;
+        int count=0;
         //ArrayList<CL_Pokemon> pokEat=//***********check how to make sure that two agents dont go to the same pokemon
         ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);
         while (index1 < agentsList.size()) {
@@ -224,31 +238,64 @@ public class Ex2 implements Runnable{
             //----------------
             //currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
             //----------------
-            if (currAg.getNextNode() == -1) {
+            if (currAg.getNextNode() == -1) {//we arrived to new node
                 int id = currAg.getID();
-                while (true) {
-                    currAg = takePokemon(game, id, gg);
-                    if (currAg.get_curr_fruit() != null) {
-                        break;
-                    }
+                //while (true) {
+                //-----------------------------------------------------
+
+                currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
+                currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));
+                if(count==0) {
+                    moveInit(game, gg);
+                    currAg.update(CL_Agent.getAgentJason(currAg.getID(),game));//update edge
+                    currAg.set_curr_fruit(CL_Pokemon.getPokemon(currAg,game,gg));//update pokemon
                 }
+                    if (currAg.get_curr_fruit()==null) {
+                        currAg = takePokemon(game, id, gg);
+                    }
+                    count++;
+                //------------------------------------------------------
+                       // if (currAg.get_curr_fruit() != null) {
+                          //  break;
+                        //}
+               // }
                 DWGraph_Algo ga = new DWGraph_Algo();
                 ga.init(gg);
                 directed_weighted_graph gCopy=ga.copy();
                 ga.init(gCopy);
+                int state;
+                double weight=-1;
+                int retrieveDes;
+                int retrieveSrc;
                 if(currAg.get_curr_fruit().getType()==-1) {
                     if(currAg.get_curr_fruit().get_edge().getSrc()<currAg.get_curr_fruit().get_edge().getDest()){
+                        weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest()).getWeight();
+                        retrieveDes=currAg.get_curr_fruit().get_edge().getDest();
+                        retrieveSrc=currAg.get_curr_fruit().get_edge().getSrc();
                         ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest());
+                        state=0;
                     }
                     else{
+                        weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc()).getWeight();
+                        retrieveDes=currAg.get_curr_fruit().get_edge().getSrc();
+                        retrieveSrc=currAg.get_curr_fruit().get_edge().getDest();
                         ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc());
+                        state=1;
                     }
                 }
                 else{
                         if (currAg.get_curr_fruit().get_edge().getSrc() > currAg.get_curr_fruit().get_edge().getDest()) {
+                            weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest()).getWeight();
+                            retrieveDes=currAg.get_curr_fruit().get_edge().getDest();
+                            retrieveSrc=currAg.get_curr_fruit().get_edge().getSrc();
                             ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getSrc(), currAg.get_curr_fruit().get_edge().getDest());
+                            state=2;
                         } else {
+                            weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc()).getWeight();
+                            retrieveDes=currAg.get_curr_fruit().get_edge().getSrc();
+                            retrieveSrc=currAg.get_curr_fruit().get_edge().getDest();
                             ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getDest(), currAg.get_curr_fruit().get_edge().getSrc());
+                            state=3;
                         }
                 }
                 double v = currAg.getValue();
@@ -261,6 +308,18 @@ public class Ex2 implements Runnable{
                     dest = ga.shortestPath(currAg.getSrcNode(),
                             currAg.get_curr_fruit().get_edge().getDest()).get(1).getKey();//we in the edge-go to destination
                 }
+                if(state==0){
+                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
+                }
+                else if(state==1){
+                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
+                }
+                else if(state==2){
+                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
+                }
+                else{
+                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
+                }
                 currAg.get_curr_fruit().setIsDest(true);
                 //******check if it Does not contradict the first inserting of the agents
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
@@ -272,7 +331,8 @@ public class Ex2 implements Runnable{
                 _ar.setAgents(Log);//update the agents on the arena
                 System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
                 //=======================================================================
-            } else {// give the current edge
+            }
+            else {// give the current edge
                 //----------------------------
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
             }
