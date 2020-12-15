@@ -25,7 +25,7 @@ public class Ex2 implements Runnable{
     @Override
     public void run() {
         // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(13); //get the scenario
+        game_service game = Game_Server_Ex2.getServer(11); //get the scenario
         //	int id = 211510631;
         //	game.login(id);
         String g = game.getGraph();

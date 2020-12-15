@@ -68,14 +68,25 @@ public class DWGraph_DS implements directed_weighted_graph{
 
     @Override
     public void connect(int src, int dest, double w) {
-        if(src==dest)return;
-        NodeData n1=(NodeData) getNode(src);
-        NodeData n2=(NodeData) getNode(dest);
-        EdgeData e=new EdgeData(src,dest,w,null,0);
-                n1.getNi().put(dest, n2);//put des node in neighbors list of n1
+        if (src == dest) return;
+        NodeData n1 = (NodeData) getNode(src);
+        NodeData n2 = (NodeData) getNode(dest);
+        if (n1 == null || n2 == null) return;
+        EdgeData e = new EdgeData(src, dest, w, null, 0);
+        if (n1.getNi().containsKey(dest)) {
+            if (getEdge(src, dest).getWeight() != w)
+            {
                 n1.getEdges().put(dest, e);//put edge between n1 to n2 in edges structures
                 this.MC++;
-                this.edges++;
+            }
+        }
+        else
+            {
+            n1.getNi().put(dest, n2);//put des node in neighbors list of n1
+            n1.getEdges().put(dest, e);//put edge between n1 to n2 in edges structures
+            this.MC++;
+            this.edges++;
+        }
     }
 
     @Override
