@@ -25,9 +25,9 @@ public class Ex2 implements Runnable{
     @Override
     public void run() {
         // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(12); //get the scenario
-        //	int id = 211510631;
-        //	game.login(id);
+        game_service game = Game_Server_Ex2.getServer(11); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
+        	//int id = 211510631;
+        	//game.login(id);
         String g = game.getGraph();
         String pks = game.getPokemons();
         directed_weighted_graph gg;
@@ -40,23 +40,23 @@ public class Ex2 implements Runnable{
         _win.setTitle("Ex2 - OOP: My Solution "+game.toString());
         //----------------------------------------------------------------- from here i need to change everyThing
         int ind=0;
-        long dt;
+        long dt=100;
         while(game.isRunning()) {
             boolean wasMoved=false;
             List<CL_Agent> AgentsList=Arena.getAgents(game.getAgents(),gg);
             int k=0;
-            dt=100;
             while(k<AgentsList.size()){
                 CL_Agent currAg=AgentsList.get(k);
-                if(currAg.getSpeed()>3)dt=80;
+                if(currAg.getSpeed()>3)dt=85;
                 int dest=currAg.getNextNode();
                 currAg.set_curr_fruit(Arena.getPokemon(dest,game,gg));
                 if(currAg.get_curr_fruit()!=null) {//it means we in the edge of the pokemon
                     //------------
                     if(currAg.get_curr_fruit().getLocation().distance(currAg.getLocation())<0.01){
                         moveAgants(game, gg);
-                        currAg.get_curr_fruit().setIsDest(false);//pokemon can be eaten now
+                        //currAg.get_curr_fruit().setIsDest(false);//pokemon can be eaten now
                         wasMoved = true;
+
                         //****check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
                     }
 
@@ -190,15 +190,6 @@ public class Ex2 implements Runnable{
         }
         double sum=0;
         while(i<ps.size()){
-            if(ps.get(i).getIsDest()){//If the Pokemon has already been captured
-                continue;
-            }
-            /*
-            if (ag.getSrcNode() == ps.get(i).get_edge().getDest()) {
-                i++;
-                continue;
-            }
-             */
             sum = ga.shortestPathDist(ag.getSrcNode(), ps.get(i).get_edge().getSrc());
 
             if(sum==-1) {
@@ -222,6 +213,55 @@ public class Ex2 implements Runnable{
         }
         return ag;
     }
+    /*
+    private static CL_Pokemon bestAnotherPokemon(game_service game,CL_Pokemon p,CL_Agent ag,directed_weighted_graph gg){
+        ArrayList<CL_Pokemon> ps=Arena.json2Pokemons(game.getPokemons());
+        ps.remove(p);
+        CL_Pokemon bestP=null;
+        double bestShortestPath=Double.POSITIVE_INFINITY;
+        DWGraph_Algo ga=new DWGraph_Algo();
+        int i=0;
+        ga.init(gg);
+        for (int a = 0; a < ps.size(); a++) {//inserting pokemons to the area(on edges)
+            Arena.updateEdge(ps.get(a), gg);
+        }
+        double sum=0;
+        while(i<ps.size()){
+            sum = ga.shortestPathDist(ag.getSrcNode(), ps.get(i).get_edge().getSrc());
+
+            if(sum==-1) {
+                i++;
+                continue;
+            }
+            if (sum < bestShortestPath) {
+                bestShortestPath = sum;
+                bestP = ps.get(i);
+            }
+            i++;
+        }
+        return bestP;
+    }
+    private static CL_Agent takeAnotherPokemon(game_service game,CL_Pokemon p,int id,directed_weighted_graph gg){
+        CL_Agent ag=getAgent(id,game,gg);
+        CL_Pokemon bestP=bestAnotherPokemon(game,p,ag,gg);
+        if(ag!=null){
+            ag.set_curr_fruit(bestP);
+        }
+        return ag;
+    }
+    //the method check if the pok is already dest
+    private static boolean isDest(game_service game,CL_Pokemon p, directed_weighted_graph gg){
+        ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(game.getAgents(), gg);
+        for(int i=0;i<agentsList.size();i++){
+            if(takePokemon(game,agentsList.get(i).getID(),gg).get_curr_fruit().equals(p)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+     */
     //------------------------------------------------------------------
     private static void moveInit(game_service game,directed_weighted_graph gg){
         String agents = game.getAgents();
@@ -251,7 +291,7 @@ public class Ex2 implements Runnable{
             CL_Agent currAg = agentsList.get(index1);
             //--------checks for me only
             System.out.println(game.timeToEnd());
-            if(game.timeToEnd()<24500 && currAg.getNextNode()==-1){
+            if(game.timeToEnd()<35000 && currAg.getNextNode()==-1){
                 System.out.println();
             }
             //------------------------------------
@@ -277,43 +317,7 @@ public class Ex2 implements Runnable{
                 ga.init(gg);
                 directed_weighted_graph gCopy=ga.copy();
                 ga.init(gCopy);
-                /*
-                int state;
-                double weight=-1;
-                int retrieveDes;
-                int retrieveSrc;
-                if(currAg.get_curr_fruit().getType()==-1) {
-                    if(currAg.get_curr_fruit().get_edge().getSrc()<currAg.get_curr_fruit().get_edge().getDest()){
-                        weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest()).getWeight();
-                        retrieveDes=currAg.get_curr_fruit().get_edge().getDest();
-                        retrieveSrc=currAg.get_curr_fruit().get_edge().getSrc();
-                        ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest());
-                        state=0;
-                    }
-                    else{
-                        weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc()).getWeight();
-                        retrieveDes=currAg.get_curr_fruit().get_edge().getSrc();
-                        retrieveSrc=currAg.get_curr_fruit().get_edge().getDest();
-                        ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc());
-                        state=1;
-                    }
-                }
-                else{
-                    if (currAg.get_curr_fruit().get_edge().getSrc() > currAg.get_curr_fruit().get_edge().getDest()) {
-                        weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getSrc(),currAg.get_curr_fruit().get_edge().getDest()).getWeight();
-                        retrieveDes=currAg.get_curr_fruit().get_edge().getDest();
-                        retrieveSrc=currAg.get_curr_fruit().get_edge().getSrc();
-                        ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getSrc(), currAg.get_curr_fruit().get_edge().getDest());
-                        state=2;
-                    } else {
-                        weight=ga.getGraph().getEdge(currAg.get_curr_fruit().get_edge().getDest(),currAg.get_curr_fruit().get_edge().getSrc()).getWeight();
-                        retrieveDes=currAg.get_curr_fruit().get_edge().getSrc();
-                        retrieveSrc=currAg.get_curr_fruit().get_edge().getDest();
-                        ga.getGraph().removeEdge(currAg.get_curr_fruit().get_edge().getDest(), currAg.get_curr_fruit().get_edge().getSrc());
-                        state=3;
-                    }
-                }
-                 */
+
                 double v = currAg.getValue();
                 int dest;
 
@@ -325,21 +329,8 @@ public class Ex2 implements Runnable{
                     dest = ga.shortestPath(currAg.getSrcNode(),
                             currAg.get_curr_fruit().get_edge().getDest()).get(1).getKey();//we in the edge-go to destination
                 }
-                /*
-                if(state==0){
-                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
-                }
-                else if(state==1){
-                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
-                }
-                else if(state==2){
-                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
-                }
-                else{
-                    ga.getGraph().connect(retrieveSrc,retrieveDes,weight);
-                }
-                 */
-                currAg.get_curr_fruit().setIsDest(true);
+
+                //currAg.get_curr_fruit().setIsDest(true);
                 //******check if it Does not contradict the first inserting of the agents
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
@@ -354,7 +345,13 @@ public class Ex2 implements Runnable{
                 //----------------------------
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
             }
-            //Arena.updateEdge(CL_Pokemon.getPokemon(currAg,game,gg),gg);
+            //---------
+            if(currAg.get_curr_fruit()!=null) {
+                System.out.println("im the agent " +currAg.getID()+" in edge: " + currAg.get_curr_edge().getSrc() + "->" + currAg.get_curr_edge().getDest() + "im go to the pokemon that is src node is: "
+                        + currAg.get_curr_fruit().get_edge().getSrc() + "and my next node is: " + currAg.getNextNode());
+            }
+            //---------
+
             index1++;
         }
         String lg = game.move();//doing move
