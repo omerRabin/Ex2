@@ -25,9 +25,9 @@ public class Ex2 implements Runnable{
     @Override
     public void run() {
         // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(11); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
-        	//int id = 211510631;
-        	//game.login(id);
+        game_service game = Game_Server_Ex2.getServer(23); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
+        	int id = 211510631;
+        	game.login(id);
         String g = game.getGraph();
         String pks = game.getPokemons();
         directed_weighted_graph gg;
@@ -38,7 +38,6 @@ public class Ex2 implements Runnable{
         init(game);
         game.startGame();
         _win.setTitle("Ex2 - OOP: My Solution "+game.toString());
-        //----------------------------------------------------------------- from here i need to change everyThing
         int ind=0;
         long dt=100;
         while(game.isRunning()) {
@@ -54,9 +53,7 @@ public class Ex2 implements Runnable{
                     //------------
                     if(currAg.get_curr_fruit().getLocation().distance(currAg.getLocation())<0.01){
                         moveAgants(game, gg);
-                        //currAg.get_curr_fruit().setIsDest(false);//pokemon can be eaten now
                         wasMoved = true;
-
                         //****check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
                     }
 
@@ -213,7 +210,7 @@ public class Ex2 implements Runnable{
         }
         return ag;
     }
-    /*
+
     private static CL_Pokemon bestAnotherPokemon(game_service game,CL_Pokemon p,CL_Agent ag,directed_weighted_graph gg){
         ArrayList<CL_Pokemon> ps=Arena.json2Pokemons(game.getPokemons());
         ps.remove(p);
@@ -261,7 +258,7 @@ public class Ex2 implements Runnable{
     }
 
 
-     */
+
     //------------------------------------------------------------------
     private static void moveInit(game_service game,directed_weighted_graph gg){
         String agents = game.getAgents();
@@ -291,7 +288,7 @@ public class Ex2 implements Runnable{
             CL_Agent currAg = agentsList.get(index1);
             //--------checks for me only
             System.out.println(game.timeToEnd());
-            if(game.timeToEnd()<35000 && currAg.getNextNode()==-1){
+            if(game.timeToEnd()<51000 && currAg.getNextNode()==-1){
                 System.out.println();
             }
             //------------------------------------
@@ -325,13 +322,11 @@ public class Ex2 implements Runnable{
                     dest= ga.shortestPath(currAg.getSrcNode(),
                             currAg.get_curr_fruit().get_edge().getSrc()).get(1).getKey();
                 }
-                else{
+                else {
                     dest = ga.shortestPath(currAg.getSrcNode(),
                             currAg.get_curr_fruit().get_edge().getDest()).get(1).getKey();//we in the edge-go to destination
                 }
 
-                //currAg.get_curr_fruit().setIsDest(true);
-                //******check if it Does not contradict the first inserting of the agents
                 game.chooseNextEdge(currAg.getID(), dest);//take the next node in the path-that is the neighbor
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the new edge-if there is
                 //-------------------------------------
@@ -345,13 +340,6 @@ public class Ex2 implements Runnable{
                 //----------------------------
                 currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
             }
-            //---------
-            if(currAg.get_curr_fruit()!=null) {
-                System.out.println("im the agent " +currAg.getID()+" in edge: " + currAg.get_curr_edge().getSrc() + "->" + currAg.get_curr_edge().getDest() + "im go to the pokemon that is src node is: "
-                        + currAg.get_curr_fruit().get_edge().getSrc() + "and my next node is: " + currAg.getNextNode());
-            }
-            //---------
-
             index1++;
         }
         String lg = game.move();//doing move

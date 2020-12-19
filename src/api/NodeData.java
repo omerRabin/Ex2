@@ -12,6 +12,7 @@ public class NodeData implements node_data{
     private int tag;//node tag
     private double tagAlgo;//tag for Dijkstra algorithm
     private parentNode p;//parent node
+    //NodeTag nodeTag;
     public NodeData(geo_location pos,int id, HashMap<Integer,edge_data> Edges,HashMap<Integer, node_data> ni,
                     double weight,String info,int tag,double tagAlgo,parentNode p){
         this.pos=pos;
@@ -108,5 +109,13 @@ public class NodeData implements node_data{
     public void setP(parentNode p){
         this.p=p;
     }
+    /*
+    public NodeTag getNodeTag(){
+        return this.nodeTag;
+    }
+    public void setNodeTag(NodeTag n){
+        this.nodeTag=n;
+    }
 
+     */
 }

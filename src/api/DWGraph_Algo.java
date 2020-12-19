@@ -1,7 +1,9 @@
 package api;
 
 import com.google.gson.*;
+import org.jetbrains.annotations.NotNull;
 
+import javax.management.NotificationFilter;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -145,7 +147,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
         return true;
     }
-
+/*
     @Override
     public double shortestPathDist(int src, int dest) {
         if(shortestPath(src,dest)==null) return -1;
@@ -153,6 +155,39 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         //return the tag of the destination node in the list which contain the shortest path
     }
 
+ */
+@Override
+public double shortestPathDist(int src, int dest) {
+    if(!isConnectedHelp(src, dest)) return -1;
+    if(shortestPath(src,dest)==null) return -1;
+    return ((NodeData)shortestPath(src,dest).get(shortestPath(src,dest).size()-1)).getTagAlgo();
+    //return ((NodeData)shortestPath(src,dest).get(0)).getTagAlgo();
+    //return the tag of the destination node in the list which contain the shortest path
+}
+    private boolean isConnectedHelp(int src,int dest)
+    {
+        initializeInfo();//initialize all the info fields
+        DWGraph_DS copy = (DWGraph_DS) (copy());//create a copy graph that the algorithm will on it
+        LinkedList<node_data> qValues = new LinkedList<>();//create linked list that will storage all nodes that we didn't visit yet
+        node_data first = copy.getNode(src);//get the node
+        qValues.add(first);
+        while (qValues.size() != 0) {
+            node_data current = qValues.removeFirst();
+            if(current.getKey()==dest) return true;//src is connected to dest
+            if (current.getInfo() != null) continue;//if we visit we can skip to the next loop because we have already marked
+            current.setInfo("visited");//remark the info
+            Collection<node_data> listNeighbors = ((NodeData)current).getNi().values();//create a collection for the neighbors list
+            LinkedList<node_data> Neighbors = new LinkedList<>(listNeighbors);//create the neighbors list
+            if (Neighbors == null) continue;
+            for (node_data n : Neighbors) {
+                if (n.getInfo() == null) {//if there is a node we didn't visited yet, we will insert it to the linkedList
+                    qValues.add(n);
+                }
+            }
+        }
+        return false;
+    }
+    /*
     @Override
     public List<node_data> shortestPath(int src, int dest) {
         int counter=0;//counter for index of listPath
@@ -181,6 +216,71 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
         return listResult;
     }
+     */
+    @Override
+    public List<node_data> shortestPath(int src, int dest) {
+        if(ga.getNode(src)==null||ga.getNode(dest)==null) return null;
+        if(ga.getV().size()==0) return null ;
+        if(src==dest) {
+            ArrayList<node_data> l=new ArrayList<>();
+            l.add(ga.getNode(src));
+            return l;
+        }
+        Iterator<node_data> upTag=ga.getV().iterator();
+        HashMap<Integer,NodeTag> tagMap=new HashMap<>();
+        while (upTag.hasNext()){
+            node_data n = upTag.next();
+            NodeTag nodeTag=new NodeTag(n.getKey(),Double.MAX_VALUE,ga.getE(n.getKey()));
+            tagMap.put(nodeTag.getKey(),nodeTag);
+        }
+        HashMap<NodeTag,NodeTag> parent=new HashMap<>();
+        NodeTag destN = tagMap.get(dest);
+        PriorityQueue<NodeTag> pQ=new PriorityQueue<>(ga.getV().size(),new NodeCompareForQueue());
+        HashSet<NodeTag> vis= new HashSet<>();
+        NodeTag srcN = tagMap.get(src);
+        srcN.setTagWeight(0);
+        ((NodeData)getGraph().getNode(src)).setTagAlgo(0);
+        pQ.add(srcN);
+        while (!pQ.isEmpty()){
+            NodeTag cur= pQ.poll();
+            if(!vis.contains(cur)){
+                vis.add(cur);
+                if(cur==destN) break;
+                for(edge_data e : cur.getE()){
+                    if(!vis.contains(tagMap.get(e.getDest()))){
+                        if(cur.getTagWeight()+e.getWeight()<tagMap.get(e.getDest()).getTagWeight()){
+                            tagMap.get(e.getDest()).setTagWeight(cur.getTagWeight()+e.getWeight());
+                            ((NodeData)getGraph().getNode(tagMap.get(e.getDest()).getKey())).setTagAlgo(cur.getTagWeight()+e.getWeight());
+                            if(e.getDest()==dest){parent.remove(tagMap.get(e.getDest()));}
+                            parent.put(tagMap.get(e.getDest()),cur);
+                            pQ.add(tagMap.get(e.getDest()));
+                        }
+                    }
+                }
+            }
+        }
+        if(!parent.containsKey(destN)) return null;
+        ArrayList<node_data> s= new ArrayList<>();
+        s.add(ga.getNode(destN.getKey()));
+        node_data n =ga.getNode(destN.getKey());
+        NodeTag nT= tagMap.get(dest);
+        while(n.getKey()!=src){
+            nT = parent.get(nT);
+            n =ga.getNode(nT.getKey());
+            s.add(n);
+        }
+        Collections.reverse(s);
+        return s;
+    }
+
+    private class NodeCompareForQueue implements Comparator<NodeTag> {
+        @Override
+        public int compare(NodeTag o1, NodeTag o2) {
+            if(o1.getTagWeight()<o2.getTagWeight()) return  -1;
+            if(o1.getTagWeight()>o2.getTagWeight()) return   1;
+            else{ return 0; }
+        }
+    }
     //class Entry for enable the priority queue to storage node info objects and sort by the minimum key
     private class Entry implements Comparable<Entry> {
         private node_data node;//info-node
@@ -202,12 +302,14 @@ public class DWGraph_Algo implements dw_graph_algorithms{
             return -1;
         }
     }
+    //-----------------------------------------------------------------
     /**
      * this method change each tag to the distance between src to the mode
-     * @param src
-     * @param dest
+     * @param //src
+     * @param //dest
      * @return
      */
+
     public boolean DijkstraHelp(int src, int dest) {
         PriorityQueue<Entry>queue=new PriorityQueue();//queue storages the nodes that we will visit by the minimum tag
         //WGraph_DS copy = (WGraph_DS) (copy());//create a copy graph that the algorithm will on it
@@ -219,7 +321,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         while(!queue.isEmpty()) {
             Entry pair=queue.poll();
             node_data current= pair.node;
-            if(current.getKey()==dest) return true;
+            //if(current.getKey()==dest) return true;
             if (current.getInfo() != null) continue;//if we visit we can skip to the next loop because we have already marked
             current.setInfo("visited");//remark the info
             Collection<node_data> listNeighbors=((NodeData)current).getNi().values();//create a collection for the neighbors list
@@ -237,8 +339,10 @@ public class DWGraph_Algo implements dw_graph_algorithms{
                 queue.add(new Entry(n,n.getTag()));//add to the queue
             }
         }
+        if(getGraph().getNode(dest).getInfo()=="visited") return true;
         return false;
     }
+
     private ArrayList<edge_data> getEdges(){
         ArrayList<edge_data> arr=new ArrayList<edge_data>();
         int index=0;
