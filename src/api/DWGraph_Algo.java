@@ -187,36 +187,6 @@ public double shortestPathDist(int src, int dest) {
         }
         return false;
     }
-    /*
-    @Override
-    public List<node_data> shortestPath(int src, int dest) {
-        int counter=0;//counter for index of listPath
-        List<node_data> listPath=new ArrayList<node_data>();//The reverse list that is returned
-        List<node_data> listResult=new ArrayList<node_data>();//the returned list
-        if(!DijkstraHelp(src,dest)) return null;//if there is no path from src to dest
-        if(src==dest) {
-            listPath.add(this.ga.getNode(src));
-            return listPath;
-        }
-        //the other case:
-        node_data d=this.ga.getNode(dest);
-        listPath.add(counter,d);//insert the dest in order to go from destination to source
-        directed_weighted_graph gCopy=copy();
-        Iterator<node_data> it=gCopy.getV().iterator();//run on the whole graph
-        while(true){
-            if(((NodeData)listPath.get(counter)).getP().keyParent==src){
-                listPath.add(gCopy.getNode(((NodeData)listPath.get(counter)).getP().keyParent));//if we finish->exit loop
-                break;
-            }
-            listPath.add(gCopy.getNode(((NodeData)listPath.get(counter)).getP().keyParent));//go to parent to restore the path
-            counter++;
-        }
-        for(int i=listPath.size()-1;i>=0;i--){
-            listResult.add(listPath.size()-i-1,listPath.get(i));//reverse the list
-        }
-        return listResult;
-    }
-     */
     @Override
     public List<node_data> shortestPath(int src, int dest) {
         if(ga.getNode(src)==null||ga.getNode(dest)==null) return null;

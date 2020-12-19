@@ -16,7 +16,7 @@ import java.util.List;
 public class Ex2 implements Runnable{
     private static GameFrame _win;//for graphics
     private static Arena _ar;//for //for represent the state of the scenario
-    private static int scenario;
+    private static int scenario=-1;
     public static void main(String[] a) {
         //scenario=Integer.parseInt(a[1]);
         Thread client = new Thread(new Ex2());
@@ -24,10 +24,17 @@ public class Ex2 implements Runnable{
     }
     @Override
     public void run() {
-        // game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(23); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
-        	int id = 211510631;
-        	game.login(id);
+
+        LevelChooser LevelNow = new LevelChooser();
+        while(scenario==-1)
+        {
+            scenario = LevelNow.ChosenLevel;
+        }
+
+         game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
+        //game_service game = Game_Server_Ex2.getServer(23); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
+       // int id = 211510631;
+        //game.login(id);
         String g = game.getGraph();
         String pks = game.getPokemons();
         directed_weighted_graph gg;
