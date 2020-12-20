@@ -68,8 +68,6 @@ public class Ex2 implements Runnable{
                 }
             }
         });
-
-
         frame.setVisible(true);
     }
 
@@ -312,8 +310,8 @@ public class Ex2 implements Runnable{
      * @return
      */
     private static CL_Agent takePokemon(game_service game,int id,directed_weighted_graph gg){
-        CL_Agent ag=getAgent(id,game,gg);
-        CL_Pokemon bestP=bestPok(ag,game,gg);
+        CL_Agent ag=getAgent(id,game,gg);//give the agent by its id
+        CL_Pokemon bestP=bestPok(ag,game,gg);//give the closest pokemon to the agent
         if(ag!=null){
             ag.set_curr_fruit(bestP);//update the pokemon in the agent
         }
