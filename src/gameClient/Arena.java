@@ -74,7 +74,12 @@ public class Arena {
 		this._info = _info;
 	}
 
-	////////////////////////////////////////////////////
+	/**
+	 * this method return List of all agents in the game
+	 * @param aa
+	 * @param gg
+	 * @return
+	 */
 	public static List<CL_Agent> getAgents(String aa, directed_weighted_graph gg) {
 		ArrayList<CL_Agent> ans = new ArrayList<CL_Agent>();
 		try {
@@ -91,6 +96,14 @@ public class Arena {
 		}
 		return ans;
 	}
+
+	/**
+	 * this method return list of all agents after change one agent data
+	 * @param aa
+	 * @param ag
+	 * @param gg
+	 * @return
+	 */
 	public static List<CL_Agent> getAgentsPerAg(String aa,String ag, directed_weighted_graph gg) {
 		ArrayList<CL_Agent> ans = new ArrayList<CL_Agent>();
 
@@ -101,6 +114,7 @@ public class Arena {
 			for(int i=0;i<ags.length();i++) {
 				CL_Agent c = new CL_Agent(gg,0);
 				if(ags.getJSONObject(i).getJSONObject("Agent").getInt("id")==a.getJSONObject("Agent").getInt("id")){
+					//the current agent is the agent in the parameter
 					c.update(ag.toString());
 					ans.add(c);
 				}
@@ -116,6 +130,11 @@ public class Arena {
 		return ans;
 	}
 
+	/**
+	 * this method return array list of the pokemons in the game
+	 * @param fs
+	 * @return
+	 */
 	public static ArrayList<CL_Pokemon> json2Pokemons(String fs) {
 		ArrayList<CL_Pokemon> ans = new  ArrayList<CL_Pokemon>();
 		try {
@@ -135,6 +154,12 @@ public class Arena {
 		catch (JSONException e) {e.printStackTrace();}
 		return ans;
 	}
+
+	/**
+	 * this method update the weight of the edge
+	 * @param fr
+	 * @param g
+	 */
 	public static void updateEdge(CL_Pokemon fr, directed_weighted_graph g) {
 		//	oop_edge_data ans = null;
 		Iterator<node_data> itr = g.getV().iterator();
@@ -148,17 +173,25 @@ public class Arena {
 			}
 		}
 	}
+
+	/**
+	 * this method get dest of a specific agent and return the pokemon of the agent
+	 * @param dest
+	 * @param game
+	 * @param gg
+	 * @return
+	 */
 	public static CL_Pokemon getPokemon(int dest,game_service game,directed_weighted_graph gg){
 		List<CL_Pokemon> PokemonsList=Arena.json2Pokemons(game.getPokemons());
 		int i=0;
 		int j=0;
 		while(j<PokemonsList.size()){
-			Arena.updateEdge(PokemonsList.get(j),gg);
+			Arena.updateEdge(PokemonsList.get(j),gg);//update the edges of the pokemons
 			j++;
 		}
 		while(i<PokemonsList.size()){
 			if(PokemonsList.get(i).get_edge()!=null) {
-				if (PokemonsList.get(i).get_edge().getDest() == dest) {
+				if (PokemonsList.get(i).get_edge().getDest() == dest) {//we arrived to the right pokemon
 					return PokemonsList.get(i);
 				}
 			}

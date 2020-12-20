@@ -13,17 +13,15 @@ public class CL_Agent {
 		public static final double EPS = 0.0001;
 		private static int _count = 0;
 		private static int _seed = 3331;
-		private int _id;
-	//	private long _key;
-		private geo_location _pos;
-		private double _speed;
-		private edge_data _curr_edge;
-		private node_data _curr_node;
-		private directed_weighted_graph _gg;
-		private CL_Pokemon _curr_fruit;
+		private int _id;//agent Id
+		private geo_location _pos;//agent Position
+		private double _speed;//agent speed
+		private edge_data _curr_edge;//agent current edge
+		private node_data _curr_node;//agent current node
+		private directed_weighted_graph _gg;//graph
+		private CL_Pokemon _curr_fruit;//the pokemon of the agent
 		private long _sg_dt;
-
-		private double _value;
+		private double _value;//agent grade in the game
 		
 		
 		public CL_Agent(directed_weighted_graph g, int start_node) {
@@ -35,6 +33,12 @@ public class CL_Agent {
 			setSpeed(0);
 		}
 
+	/**
+	 * this method return the json of agent by giving its Id
+	 * @param id
+	 * @param game
+	 * @return
+	 */
 	public static String getAgentJason(int id, game_service game) {
 		String AllAgents = game.getAgents();
 
@@ -42,10 +46,10 @@ public class CL_Agent {
 			JSONObject ttt = new JSONObject(AllAgents);
 			JSONArray ags = ttt.getJSONArray("Agents");
 
-			for (int i = 0; i < ags.length(); i++) {
-				JSONObject ag = ags.getJSONObject(i);
-				JSONObject a = ag.getJSONObject("Agent");
-				int Id = a.getInt("id");
+			for (int i = 0; i < ags.length(); i++) {//loop on the agents
+				JSONObject ag = ags.getJSONObject(i);//take the jsonObject
+				JSONObject a = ag.getJSONObject("Agent");//take the information after Agent
+				int Id = a.getInt("id");//take agent id
 				if (Id == id) {
 					return ag.toString();
 				}
@@ -56,6 +60,10 @@ public class CL_Agent {
 		return null;
 	}
 
+	/**
+	 * this method update the state of the agent in the game
+	 * @param json
+	 */
 		public void update(String json) {
 			JSONObject line;
 			try {
@@ -76,7 +84,7 @@ public class CL_Agent {
 					this.setSpeed(speed);
 					this.setNextNode(dest);
 					this.setMoney(value);
-					this.set_curr_edge(_gg.getEdge(src,dest));
+					this.set_curr_edge(_gg.getEdge(src,dest));//update the edge
 				}
 			}
 			catch(Exception e) {

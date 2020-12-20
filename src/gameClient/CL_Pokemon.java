@@ -9,13 +9,12 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class CL_Pokemon {
-	private edge_data _edge;
-	private double _value;
-	private int _type;
-	private Point3D _pos;
+	private edge_data _edge;//edge
+	private double _value;//value of pok
+	private int _type;//type-mark on which edge the pokemon is
+	private Point3D _pos;//position of the pokemon
 	private double min_dist;
 	private int min_ro;
-	private boolean isDest;
 	public CL_Pokemon(Point3D p, int t, double v, double s, edge_data e) {
 		_type = t;
 	//	_speed = s;
@@ -25,48 +24,53 @@ public class CL_Pokemon {
 		min_dist = -1;
 		min_ro = -1;
 	}
+
+	/**
+	 * this method return the src of the edge of the pokemon that agent is going to
+	 * * @param ag
+	 * @param game
+	 * @param gg
+	 * @return
+	 */
 	public static int getStartDes(CL_Agent ag,game_service game,directed_weighted_graph gg){
 		List<CL_Pokemon> l=Arena.json2Pokemons(game.getPokemons());
 		int j=0;
 		while(j<l.size()){
-			Arena.updateEdge(l.get(j),gg);
+			Arena.updateEdge(l.get(j),gg);//update the edges
 			j++;
 		}
 		int i=0;
 		while(i<l.size()){
-			if(l.get(i).get_edge().getSrc()==ag.getSrcNode()){
+			if(l.get(i).get_edge().getSrc()==ag.getSrcNode()){//if we in the start of the edge
 				return l.get(i).get_edge().getDest();
 			}
 			i++;
 		}
 		return -1;
 	}
+
+	/**
+	 * this method get a pokemon of the agent by giving the agent
+	 * @param ag
+	 * @param game
+	 * @param gg
+	 * @return
+	 */
 	public static CL_Pokemon getPokemon(CL_Agent ag, game_service game,directed_weighted_graph gg){
 		edge_data e=ag.get_curr_edge();
 		List<CL_Pokemon> l=Arena.json2Pokemons(game.getPokemons());
 		int j=0;
 
 		while(j<l.size()){
-			Arena.updateEdge(l.get(j),gg);
+			Arena.updateEdge(l.get(j),gg);//update the edges
 			j++;
 		}
 		int i=0;
 		while(i<l.size()){
-			if(e==l.get(i).get_edge()) return l.get(i);
+			if(e==l.get(i).get_edge()) return l.get(i);//if the edge of the pok compatible with the edge that in the agent
 			i++;
 		}
 		return null;
-	}
-	public static CL_Pokemon init_from_json(String json) {
-		CL_Pokemon ans = null;
-		try {
-			JSONObject p = new JSONObject(json);
-			int id = p.getInt("id");
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		return ans;
 	}
 	public String toString() {return "F:{v="+_value+", t="+_type+"}";}
 	public edge_data get_edge() {
@@ -98,11 +102,5 @@ public class CL_Pokemon {
 
 	public void setMin_ro(int min_ro) {
 		this.min_ro = min_ro;
-	}
-	public boolean getIsDest(){
-		return this.isDest;
-	}
-	public void setIsDest(boolean flag){
-		this.isDest=flag;
 	}
 }

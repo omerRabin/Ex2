@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class LevelChooser {
-    int ChosenLevel = 0;
+    public static int ChosenLevel = -1;
     JLabel label;
     JFrame frame;
     JPanel panel;

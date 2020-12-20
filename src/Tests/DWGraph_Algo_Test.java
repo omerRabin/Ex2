@@ -120,29 +120,8 @@ public class DWGraph_Algo_Test {
         g6A.init(g6);
         assertEquals(true,g6A.isConnected());
     }
-    @Test
-    public void DijkstraHelpTest() {
-        DWGraph_DS g = new DWGraph_DS();
-        for (int i = 0; i < 7; i++) {
-            NodeData n=new NodeData(i);
-            g.addNode(n);
-        }
-        g.connect(0, 1, 4);
-        g.connect(0, 4, 2);
-        g.connect(0, 5, 8);
-        g.connect(1, 2, 7);
-        g.connect(1, 4, 1);
-        g.connect(3, 4, 4);
-        g.connect(6, 3, 9);
-        g.connect(5, 3, 3);
-        graphA.init(g);
-        //assertEquals(true, graphA.DijkstraHelp(0, 3));
-        //assertEquals(true,11==((NodeData)graphA.getGraph().getNode(3)).getTagAlgo());
-        //assertEquals(true, graphA.DijkstraHelp(0, 4));
-        //assertEquals(true,2==((NodeData)graphA.getGraph().getNode(4)).getTagAlgo());
 
 
-    }
     @Test
     public void shortestPathTest() {
         DWGraph_DS g=new DWGraph_DS();
@@ -160,8 +139,8 @@ public class DWGraph_Algo_Test {
         g.connect(5,3,3);
         g.connect(0,3,7);
         graphA.init(g);
-        //assertEquals(graphA.shortestPath(0,4).get(1).getKey(),4);
-        //assertEquals(graphA.shortestPath(0,3).get(2).getKey(),3);
+        assertEquals(graphA.shortestPath(0,4).get(1).getKey(),4);
+        assertEquals(graphA.shortestPath(0,3).get(2).getKey(),3);
 
     }
     @Test

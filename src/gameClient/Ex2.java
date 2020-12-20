@@ -24,15 +24,17 @@ public class Ex2 implements Runnable{
     }
     @Override
     public void run() {
-
+        /*
         LevelChooser LevelNow = new LevelChooser();
+
         while(scenario==-1)
         {
             scenario = LevelNow.ChosenLevel;
         }
 
-         game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        //game_service game = Game_Server_Ex2.getServer(23); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
+         */
+         //game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
+        game_service game = Game_Server_Ex2.getServer(11); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
        // int id = 211510631;
         //game.login(id);
         String g = game.getGraph();
@@ -56,15 +58,16 @@ public class Ex2 implements Runnable{
                 if(currAg.getSpeed()>3)dt=85;
                 int dest=currAg.getNextNode();
                 currAg.set_curr_fruit(Arena.getPokemon(dest,game,gg));
+
                 if(currAg.get_curr_fruit()!=null) {//it means we in the edge of the pokemon
                     //------------
-                    if(currAg.get_curr_fruit().getLocation().distance(currAg.getLocation())<0.01){
+                    if(currAg.get_curr_fruit().getLocation().distance(currAg.getLocation())<0.01){//if the agent is close enough to pokemon
                         moveAgants(game, gg);
                         wasMoved = true;
-                        //****check if break here improves the algorithm and if it will work and not stop everything (if no one is close enough to pokemon)!
                     }
 
                 }
+
                 k++;
             }
             if(!wasMoved) {
@@ -86,6 +89,11 @@ public class Ex2 implements Runnable{
         System.exit(0);
 
     }
+
+    /**
+     * this method locate the agents in strategy way on the arena in the first-Time
+     * @param game
+     */
     private void init(game_service game) {
         String g = game.getGraph();
         String fs = game.getPokemons();
@@ -124,10 +132,10 @@ public class Ex2 implements Runnable{
                 Arena.updateEdge(cl_fs.get(a), gg);
             }
             for(int a = 0;a<numOfAgents;a++){//inserting agents to the area(on nodes)
-                //********************************think how to insert efficiently the agents
                 CL_Pokemon c = cl_fs.get(a);
                 int nn = c.get_edge().getDest();
                 int ns=c.get_edge().getSrc();
+                // cases of the locations of the pokemon
                 if(nn>ns&& c.getType()>0){
                     game.addAgent(ns);
                 }
@@ -140,7 +148,6 @@ public class Ex2 implements Runnable{
                 else if(nn<ns&&c.getType()<0){
                     game.addAgent(ns);
                 }
-                c.setIsDest(true);
             }
         }
         catch (JSONException e) {e.printStackTrace();}
@@ -149,29 +156,41 @@ public class Ex2 implements Runnable{
      * This method Sort in ascending order the pokemons by their distance from agent(the edges weights)
      * @return
      */
-//*************must to update this method. After boaz will answer me if there is importance to the weights. if there is, we need to sort not from src to des, but according to
-    //weight from src of edge to pokemon position!(like i did yet, but check if its valid)
+
     private ArrayList<CL_Pokemon> sortPokemons(ArrayList<CL_Pokemon> pokemons){
         ArrayList<CL_Pokemon> arr=new ArrayList<CL_Pokemon>();
         while(!pokemons.isEmpty()) {
-            CL_Pokemon pok=minPokemonHelp(pokemons);
+            CL_Pokemon pok=minPokemonHelp(pokemons);//find the pokemons by weights
             arr.add(pok);
             pokemons.remove(pok);
         }
         return arr;
     }
+
+    /**
+     * this method find the pokemon with the minimum weight
+     * @param pokemons
+     * @return
+     */
     private CL_Pokemon minPokemonHelp(ArrayList<CL_Pokemon> pokemons){
         int i=0;
         CL_Pokemon bestP=pokemons.get(i);
         while(i<pokemons.size()) {
-            if(pokemons.get(i).get_edge().getWeight()<bestP.get_edge().getWeight()){
+            if(pokemons.get(i).get_edge().getWeight()<bestP.get_edge().getWeight()){//if there is new bestPok
                 bestP=pokemons.get(i);
             }
             i++;
         }
         return bestP;
     }
-    //-----------------------------------------------------------------------
+
+    /**
+     * this method return agent by giving it's Id
+     * @param id
+     * @param game
+     * @param gg
+     * @return
+     */
     private static CL_Agent getAgent(int id,game_service game,directed_weighted_graph gg){
         List<CL_Agent> l=Arena.getAgents(game.getAgents(),gg);
         int i=0;
@@ -181,7 +200,14 @@ public class Ex2 implements Runnable{
         }
         return null;
     }
-    //-------------------------------------------------------------------
+
+    /**
+     *this method return the closet pokemon the the agent ag-using shortestPath algorithm
+     * @param ag
+     * @param game
+     * @param gg
+     * @return
+     */
     private static CL_Pokemon bestPok(CL_Agent ag,game_service game,directed_weighted_graph gg){
         ArrayList<CL_Pokemon> ps=Arena.json2Pokemons(game.getPokemons());
         CL_Pokemon bestP=null;
@@ -208,72 +234,34 @@ public class Ex2 implements Runnable{
         }
         return bestP;
     }
-    //------------------------------------------------------------------------
+
+    /**
+     * the method return the closet pokemon to agent with the id in parameter
+     * @param game
+     * @param id
+     * @param gg
+     * @return
+     */
     private static CL_Agent takePokemon(game_service game,int id,directed_weighted_graph gg){
         CL_Agent ag=getAgent(id,game,gg);
         CL_Pokemon bestP=bestPok(ag,game,gg);
         if(ag!=null){
-            ag.set_curr_fruit(bestP);
+            ag.set_curr_fruit(bestP);//update the pokemon in the agent
         }
         return ag;
     }
-
-    private static CL_Pokemon bestAnotherPokemon(game_service game,CL_Pokemon p,CL_Agent ag,directed_weighted_graph gg){
-        ArrayList<CL_Pokemon> ps=Arena.json2Pokemons(game.getPokemons());
-        ps.remove(p);
-        CL_Pokemon bestP=null;
-        double bestShortestPath=Double.POSITIVE_INFINITY;
-        DWGraph_Algo ga=new DWGraph_Algo();
-        int i=0;
-        ga.init(gg);
-        for (int a = 0; a < ps.size(); a++) {//inserting pokemons to the area(on edges)
-            Arena.updateEdge(ps.get(a), gg);
-        }
-        double sum=0;
-        while(i<ps.size()){
-            sum = ga.shortestPathDist(ag.getSrcNode(), ps.get(i).get_edge().getSrc());
-
-            if(sum==-1) {
-                i++;
-                continue;
-            }
-            if (sum < bestShortestPath) {
-                bestShortestPath = sum;
-                bestP = ps.get(i);
-            }
-            i++;
-        }
-        return bestP;
-    }
-    private static CL_Agent takeAnotherPokemon(game_service game,CL_Pokemon p,int id,directed_weighted_graph gg){
-        CL_Agent ag=getAgent(id,game,gg);
-        CL_Pokemon bestP=bestAnotherPokemon(game,p,ag,gg);
-        if(ag!=null){
-            ag.set_curr_fruit(bestP);
-        }
-        return ag;
-    }
-    //the method check if the pok is already dest
-    private static boolean isDest(game_service game,CL_Pokemon p, directed_weighted_graph gg){
-        ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(game.getAgents(), gg);
-        for(int i=0;i<agentsList.size();i++){
-            if(takePokemon(game,agentsList.get(i).getID(),gg).get_curr_fruit().equals(p)){
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-
-    //------------------------------------------------------------------
+    /**
+     * the method move the agents in the first time
+     * @param game
+     * @param gg
+     */
     private static void moveInit(game_service game,directed_weighted_graph gg){
         String agents = game.getAgents();
-        ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);
+        ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);//give the agent list
         int index1 = 0;
         while (index1 < agentsList.size()) {
             CL_Agent currAg = agentsList.get(index1);
-            game.chooseNextEdge(currAg.getID(),CL_Pokemon.getStartDes(currAg,game,gg));
+            game.chooseNextEdge(currAg.getID(),CL_Pokemon.getStartDes(currAg,game,gg));//choose the next node
             index1++;
         }
     }
@@ -293,12 +281,7 @@ public class Ex2 implements Runnable{
         ArrayList<CL_Agent> agentsList = (ArrayList<CL_Agent>) Arena.getAgents(agents, gg);
         while (index1 < agentsList.size()) {
             CL_Agent currAg = agentsList.get(index1);
-            //--------checks for me only
-            System.out.println(game.timeToEnd());
-            if(game.timeToEnd()<51000 && currAg.getNextNode()==-1){
-                System.out.println();
-            }
-            //------------------------------------
+
             currAg.update(CL_Agent.getAgentJason(currAg.getID(), game));//update the edge-if there is
             if (currAg.getNextNode() == -1) {//we arrived to new node
                 int id = currAg.getID();
@@ -310,13 +293,8 @@ public class Ex2 implements Runnable{
                         la.get(i).set_curr_fruit(CL_Pokemon.getPokemon(la.get(i), game, gg));//update pokemon
                     }
                 }
-                currAg = takePokemon(game, id, gg);
-                count++;
-                //------------------------------------------------------
-                // if (currAg.get_curr_fruit() != null) {
-                //  break;
-                //}
-                // }
+                currAg = takePokemon(game, id, gg);//take the closet pokemon the agent
+                count++;//conut++  for no go into the move init again
                 DWGraph_Algo ga = new DWGraph_Algo();
                 ga.init(gg);
                 directed_weighted_graph gCopy=ga.copy();

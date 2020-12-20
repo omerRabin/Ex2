@@ -73,6 +73,11 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         if(countVisited==this.ga.getV().size()) return true;//if we visited all nodes
         return false;
     }
+
+    /**
+     * this method return the number of the edges in the graph
+     * @return
+     */
     private int countEdges(){
         int counter=0;
         Iterator<node_data> it=this.ga.getV().iterator();
@@ -81,6 +86,10 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
         return counter;
     }
+
+    /**
+     * this method initialize all the tagNodes
+     */
     private void initializeTagNode(){
         Iterator<node_data> it=this.ga.getV().iterator();
         while(it.hasNext()){
@@ -91,6 +100,11 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
     }
     public int counter=0;
+
+    /**
+     * this method inverting
+     * @param n
+     */
     private void invertingHelp(NodeData n){
         Iterator<node_data> it=n.getNi().values().iterator();
         while (it.hasNext()){
@@ -147,21 +161,12 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         }
         return true;
     }
-/*
-    @Override
-    public double shortestPathDist(int src, int dest) {
-        if(shortestPath(src,dest)==null) return -1;
-        return ((NodeData)shortestPath(src,dest).get(shortestPath(src,dest).size()-1)).getTagAlgo();
-        //return the tag of the destination node in the list which contain the shortest path
-    }
 
- */
 @Override
 public double shortestPathDist(int src, int dest) {
     if(!isConnectedHelp(src, dest)) return -1;
     if(shortestPath(src,dest)==null) return -1;
     return ((NodeData)shortestPath(src,dest).get(shortestPath(src,dest).size()-1)).getTagAlgo();
-    //return ((NodeData)shortestPath(src,dest).get(0)).getTagAlgo();
     //return the tag of the destination node in the list which contain the shortest path
 }
     private boolean isConnectedHelp(int src,int dest)
@@ -189,37 +194,38 @@ public double shortestPathDist(int src, int dest) {
     }
     @Override
     public List<node_data> shortestPath(int src, int dest) {
-        if(ga.getNode(src)==null||ga.getNode(dest)==null) return null;
-        if(ga.getV().size()==0) return null ;
-        if(src==dest) {
+        if(ga.getNode(src)==null||ga.getNode(dest)==null) return null;//if one of the node not exist
+        if(ga.getV().size()==0) return null ;//if the graph has no have nodes
+        if(src==dest) {//if its shortest path from node to itself
             ArrayList<node_data> l=new ArrayList<>();
             l.add(ga.getNode(src));
             return l;
         }
-        Iterator<node_data> upTag=ga.getV().iterator();
-        HashMap<Integer,NodeTag> tagMap=new HashMap<>();
-        while (upTag.hasNext()){
-            node_data n = upTag.next();
-            NodeTag nodeTag=new NodeTag(n.getKey(),Double.MAX_VALUE,ga.getE(n.getKey()));
+        Iterator<node_data> graph=ga.getV().iterator();//iterator on the graph
+        HashMap<Integer,NodeTag> tagMap=new HashMap<>();//hash-Map of nodeTags-for the weights in the Dijkstra algorithm
+        while (graph.hasNext()){
+            node_data n = graph.next();//current node in the graph
+            NodeTag nodeTag=new NodeTag(n.getKey(),Double.MAX_VALUE,ga.getE(n.getKey()));//create a node-tag object
             tagMap.put(nodeTag.getKey(),nodeTag);
         }
-        HashMap<NodeTag,NodeTag> parent=new HashMap<>();
-        NodeTag destN = tagMap.get(dest);
-        PriorityQueue<NodeTag> pQ=new PriorityQueue<>(ga.getV().size(),new NodeCompareForQueue());
-        HashSet<NodeTag> vis= new HashSet<>();
+        HashMap<NodeTag,NodeTag> parent=new HashMap<>();//create hashMap of Parents from
+        NodeTag destN = tagMap.get(dest);//take the nodeTag of the destination node
+        PriorityQueue<NodeTag> pQ=new PriorityQueue<>(ga.getV().size(),new NodeCompareForQueue());//create priority queue with Priority by nodeCompare
+        HashSet<NodeTag> vis= new HashSet<>();//the list of the nodeTag from dest to src
         NodeTag srcN = tagMap.get(src);
-        srcN.setTagWeight(0);
-        ((NodeData)getGraph().getNode(src)).setTagAlgo(0);
+        srcN.setTagWeight(0);//the weight from src to itself is 0
+        ((NodeData)getGraph().getNode(src)).setTagAlgo(0);//update the tag algo
         pQ.add(srcN);
         while (!pQ.isEmpty()){
             NodeTag cur= pQ.poll();
             if(!vis.contains(cur)){
                 vis.add(cur);
-                if(cur==destN) break;
-                for(edge_data e : cur.getE()){
+                if(cur==destN) break;//if we finished
+                for(edge_data e : cur.getE()){//run on the edges
                     if(!vis.contains(tagMap.get(e.getDest()))){
-                        if(cur.getTagWeight()+e.getWeight()<tagMap.get(e.getDest()).getTagWeight()){
+                        if(cur.getTagWeight()+e.getWeight()<tagMap.get(e.getDest()).getTagWeight()){//check if there is new path to the node that more cheap
                             tagMap.get(e.getDest()).setTagWeight(cur.getTagWeight()+e.getWeight());
+                            //updte the new tag in tagAlgo for shortestPathDist method
                             ((NodeData)getGraph().getNode(tagMap.get(e.getDest()).getKey())).setTagAlgo(cur.getTagWeight()+e.getWeight());
                             if(e.getDest()==dest){parent.remove(tagMap.get(e.getDest()));}
                             parent.put(tagMap.get(e.getDest()),cur);
@@ -229,20 +235,24 @@ public double shortestPathDist(int src, int dest) {
                 }
             }
         }
-        if(!parent.containsKey(destN)) return null;
+        if(!parent.containsKey(destN)) return null;//if the path from src to dest isn't exist
         ArrayList<node_data> s= new ArrayList<>();
         s.add(ga.getNode(destN.getKey()));
         node_data n =ga.getNode(destN.getKey());
         NodeTag nT= tagMap.get(dest);
+        //while for go back from dest to src and get the shortestPath
         while(n.getKey()!=src){
             nT = parent.get(nT);
             n =ga.getNode(nT.getKey());
             s.add(n);
         }
-        Collections.reverse(s);
+        Collections.reverse(s);//reverse the path to the original frame
         return s;
     }
 
+    /**
+     * class represent a comparator for NodeTag class by tagWeights
+     */
     private class NodeCompareForQueue implements Comparator<NodeTag> {
         @Override
         public int compare(NodeTag o1, NodeTag o2) {
@@ -251,81 +261,29 @@ public double shortestPathDist(int src, int dest) {
             else{ return 0; }
         }
     }
-    //class Entry for enable the priority queue to storage node info objects and sort by the minimum key
-    private class Entry implements Comparable<Entry> {
-        private node_data node;//info-node
-        private double tag;//tag of node
-        //constructor
-        public Entry(node_data node, double tag) {
-            this.tag = tag;
-            this.node = node;
-        }
-        /**
-         * compre to between tags for implementation Comparable
-         * @param other
-         * @return
-         */
-        @Override
-        public int compareTo(Entry other) {
-            if(this.tag>other.tag) return 1;
-            if(this.tag==other.tag) return 0;
-            return -1;
-        }
-    }
-    //-----------------------------------------------------------------
+
     /**
-     * this method change each tag to the distance between src to the mode
-     * @param //src
-     * @param //dest
+     * this method return an array list of the Edges in the graph
      * @return
      */
-
-    public boolean DijkstraHelp(int src, int dest) {
-        PriorityQueue<Entry>queue=new PriorityQueue();//queue storages the nodes that we will visit by the minimum tag
-        //WGraph_DS copy = (WGraph_DS) (copy());//create a copy graph that the algorithm will on it
-        initializeTag();
-        initializeInfo();
-        node_data first=this.ga.getNode(src);
-        ((NodeData)first).setTagAlgo(0);//distance from itself=0
-        queue.add(new Entry(first,((NodeData)first).getTagAlgo()));
-        while(!queue.isEmpty()) {
-            Entry pair=queue.poll();
-            node_data current= pair.node;
-            //if(current.getKey()==dest) return true;
-            if (current.getInfo() != null) continue;//if we visit we can skip to the next loop because we have already marked
-            current.setInfo("visited");//remark the info
-            Collection<node_data> listNeighbors=((NodeData)current).getNi().values();//create a collection for the neighbors list
-            LinkedList<node_data> Neighbors = new LinkedList<>(listNeighbors);//create the neighbors list
-            if (Neighbors == null) continue;
-            for(node_data n:Neighbors) {
-                //check if there is another path from src that shortest(with direction from current to n)
-                if(((NodeData)n).getTagAlgo()>ga.getEdge(current.getKey(),n.getKey()).getWeight()+((NodeData)current).getTagAlgo())
-                {
-                    ((NodeData)n).setTagAlgo(((NodeData)current).getTagAlgo() + ga.getEdge(
-                            current.getKey(),n.getKey()).getWeight());//compute the new tag
-                    parentNode p=new parentNode(current.getKey());//create the parent
-                    ((NodeData) n).setP(p);//save the parent
-                }
-                queue.add(new Entry(n,n.getTag()));//add to the queue
-            }
-        }
-        if(getGraph().getNode(dest).getInfo()=="visited") return true;
-        return false;
-    }
-
     private ArrayList<edge_data> getEdges(){
         ArrayList<edge_data> arr=new ArrayList<edge_data>();
         int index=0;
         Iterator<node_data> iter=getGraph().getV().iterator();
         while(iter.hasNext()){
-            Iterator<edge_data> itEd=getGraph().getE(iter.next().getKey()).iterator();
+            Iterator<edge_data> itEd=getGraph().getE(iter.next().getKey()).iterator();//take the Edges of current node
             while(itEd.hasNext()){
-                arr.add(itEd.next());
+                arr.add(itEd.next());//insert the edge to the arrayList
                 index++;
             }
         }
         return arr;
     }
+
+    /**
+     * this method return array list of the nodes in the graph
+     * @return
+     */
     private ArrayList<node_data> getNodes(){
         ArrayList<node_data> arr=new ArrayList<node_data>();
         int index=0;
