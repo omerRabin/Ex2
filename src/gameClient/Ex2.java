@@ -9,6 +9,9 @@ import Server.Game_Server_Ex2;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,79 +19,145 @@ import java.util.List;
 public class Ex2 implements Runnable{
     private static GameFrame _win;//for graphics
     private static Arena _ar;//for //for represent the state of the scenario
-    private static int scenario=-1;
-    public static void main(String[] a) {
-        //scenario=Integer.parseInt(a[1]);
-        Thread client = new Thread(new Ex2());
-        client.start();
+    private static int scenario;
+    private static int id=-1;
+    public static long timeToEnd;
+    public static void LevelChooser(Thread client) {
+        JPanel panel = new JPanel();
+        JFrame frame = new JFrame();
+        frame.setSize(350, 200);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        JLabel idlabel = new JLabel("Enter ID");
+        idlabel.setBounds(10, 20, 80, 25);
+        panel.add(idlabel);
+
+        JTextField userID = new JTextField(20);
+        userID.setBounds(100, 20, 165, 25);
+        panel.add(userID);
+
+        JLabel label = new JLabel("Enter level");
+        label.setBounds(10, 50, 80, 25);
+        panel.add(label);
+
+        JTextField userText = new JTextField(20);
+        userText.setBounds(100, 50, 165, 25);
+        panel.add(userText);
+
+        JLabel choose = new JLabel("No level chosen");
+        choose.setBounds(100, 110, 300, 25);
+        panel.add(choose);
+
+        JButton button = new JButton("Choose");
+        button.setBounds(10, 80, 80, 25);
+        panel.add(button);
+        button.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                try {
+                    scenario = Integer.parseInt(userText.getText());
+                    id = Integer.parseInt(userID.getText());
+                    choose.setText("Chosen level: " + scenario + " with the ID:"+ id);
+                    client.start();
+                }catch(Exception e) {
+                    choose.setText("Invalid Input");
+                }
+            }
+        });
+
+
+        frame.setVisible(true);
     }
+
+
+    public static void main(String[] a) {
+            if (a.length > 0) {
+                try {
+                    id = Integer.parseInt(a[0]);
+                    scenario = Integer.parseInt(a[1]);
+                    Thread client = new Thread(new Ex2());
+                    client.start();
+                } catch (NumberFormatException e) {
+                    System.err.println("Argument" + a[0] + " must be an integer.");
+                }
+            }
+            //scenario=Integer.parseInt(a[1]);
+            Thread client = new Thread(new Ex2());
+            LevelChooser(client);
+            //client.start();
+        }
     @Override
     public void run() {
-        /*
-        LevelChooser LevelNow = new LevelChooser();
+        game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
+        //game_service game = Game_Server_Ex2.getServer(8); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
+        //int id = 211510631;
+        if (game == null) {//the case we try to run a scenario that not exist
+            Thread client = new Thread(new Ex2());
+            LevelChooser(client);
+        } else {
+            game.login(id);
+            String g = game.getGraph();
+            String pks = game.getPokemons();
+            directed_weighted_graph gg;
+            GsonBuilder builder = new GsonBuilder();//create the Gson builder
+            builder.registerTypeAdapter(directed_weighted_graph.class, new GraphJsonDeserializer());//using the method in GraphJsonDeserializer class to make the json to graph
+            Gson gson = builder.create();//create the json
+            gg = gson.fromJson(g, directed_weighted_graph.class);//convert the gson to graph from json
+            init(game);
+            game.startGame();
+            _win.setTitle("Ex2 - OOP: My Solution " + game.toString());
+            int ind = 0;
+            long dt = 100;
+            while (game.isRunning()) {
+                timeToEnd=game.timeToEnd();
+                boolean wasMoved = false;
+                List<CL_Agent> AgentsList = Arena.getAgents(game.getAgents(), gg);
+                int k = 0;
+                while (k < AgentsList.size()) {
+                    CL_Agent currAg = AgentsList.get(k);
+                    if (currAg.getSpeed() > 3) dt = 90;
+                    int dest = currAg.getNextNode();
+                    currAg.set_curr_fruit(Arena.getPokemon(dest, game, gg));
 
-        while(scenario==-1)
-        {
-            scenario = LevelNow.ChosenLevel;
-        }
+                    if (currAg.get_curr_fruit() != null) {//it means we in the edge of the pokemon
+                        //------------
+                        if (currAg.get_curr_fruit().getLocation().distance(currAg.getLocation()) < 0.01) {//if the agent is close enough to pokemon
+                            moveAgants(game, gg);
+                            wasMoved = true;
+                        }
 
-         */
-         //game_service game = Game_Server_Ex2.getServer(scenario); //get the scenario
-        game_service game = Game_Server_Ex2.getServer(11); //get the scenario return to 8 when the pokemon is close to agent but not on the right edge its collect the second pokemon and then come into loop on the edge
-       // int id = 211510631;
-        //game.login(id);
-        String g = game.getGraph();
-        String pks = game.getPokemons();
-        directed_weighted_graph gg;
-        GsonBuilder builder=new GsonBuilder();//create the Gson builder
-        builder.registerTypeAdapter(directed_weighted_graph.class,new GraphJsonDeserializer());//using the method in GraphJsonDeserializer class to make the json to graph
-        Gson gson=builder.create();//create the json
-        gg=gson.fromJson(g,directed_weighted_graph.class);//convert the gson to graph from json
-        init(game);
-        game.startGame();
-        _win.setTitle("Ex2 - OOP: My Solution "+game.toString());
-        int ind=0;
-        long dt=100;
-        while(game.isRunning()) {
-            boolean wasMoved=false;
-            List<CL_Agent> AgentsList=Arena.getAgents(game.getAgents(),gg);
-            int k=0;
-            while(k<AgentsList.size()){
-                CL_Agent currAg=AgentsList.get(k);
-                if(currAg.getSpeed()>3)dt=85;
-                int dest=currAg.getNextNode();
-                currAg.set_curr_fruit(Arena.getPokemon(dest,game,gg));
-
-                if(currAg.get_curr_fruit()!=null) {//it means we in the edge of the pokemon
-                    //------------
-                    if(currAg.get_curr_fruit().getLocation().distance(currAg.getLocation())<0.01){//if the agent is close enough to pokemon
-                        moveAgants(game, gg);
-                        wasMoved = true;
                     }
 
+                    k++;
+                }
+                if (!wasMoved) {
+                    moveAgants(game, gg);
                 }
 
-                k++;
+                try {
+                    if (ind % 3 == 0) {
+                        _win.repaint();
+                    }
+                    Thread.sleep(dt);
+                    ind++;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            if(!wasMoved) {
-                moveAgants(game,gg);
+            if (!game.isRunning()) {
+                Thread client = new Thread(new Ex2());
+                LevelChooser(client);
             }
+            String res = game.toString();
 
-            try {
-                if(ind%3==0) {_win.repaint();}
-                Thread.sleep(dt);
-                ind++;
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
+            System.out.println(res);
         }
-        String res = game.toString();
-
-        System.out.println(res);
-        System.exit(0);
-
     }
+
 
     /**
      * this method locate the agents in strategy way on the arena in the first-Time

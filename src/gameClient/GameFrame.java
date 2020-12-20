@@ -7,9 +7,9 @@ import api.node_data;
 import gameClient.util.Point3D;
 import gameClient.util.Range;
 import gameClient.util.Range2D;
-
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,7 +25,27 @@ public class GameFrame extends JFrame {//----------------change things and add f
         this._ar = ar;
         updateFrame();
     }
-
+    public void addTime(Graphics g){
+        long time=0;
+        time=Ex2.timeToEnd;
+        g.setColor(Color.BLACK);
+        FontMetrics fm=g.getFontMetrics();
+        int w=fm.stringWidth(String.valueOf(time));
+        int h=fm.getAscent();
+        g.drawString("Time left: "+String.valueOf(time/1000),120-(w/2),50+(h/4));
+    }
+    public void addScore(Graphics g){
+        List<CL_Agent> rs = _ar.getAgents();
+        double score = 0;
+        for(int i = 0; i < rs.size();i++) {
+            score = rs.get(i).getValue();
+            g.setColor(Color.black);
+            FontMetrics fm = g.getFontMetrics();
+            int w = fm.stringWidth(String.valueOf(score));
+            int h = fm.getAscent();
+            g.drawString("Agent number "+i+" score is: "+String.valueOf(score), w, 50 +((i+1)*25)  + (h / 4));
+        }
+    }
     private void updateFrame() {
         Range rx = new Range(20,this.getWidth()-20);
         Range ry = new Range(this.getHeight()-10,150);
@@ -42,7 +62,8 @@ public class GameFrame extends JFrame {//----------------change things and add f
         drawGraph(g);
         drawAgants(g);
         drawInfo(g);
-
+        addTime(g);
+        addScore(g);
     }
     private void drawInfo(Graphics g) {
         java.util.List<String> str = _ar.get_info();

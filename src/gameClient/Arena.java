@@ -27,7 +27,6 @@ public class Arena {
 	private List<String> _info;
 	private static Point3D MIN = new Point3D(0, 100,0);
 	private static Point3D MAX = new Point3D(0, 100,0);
-
 	public Arena() {;
 		_info = new ArrayList<String>();
 	}
