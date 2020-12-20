@@ -7,3 +7,4 @@ In addition, our project contains many functions that implement sophisticated al
  In the second part of our project we implemented a-game of pokemons that include agents that their target is to catch pokemons that exist in the graph on a different locations. The speed of the agents changes when they eat more pokemons.
  If you want to run our project, you can do-git clone to our project, and then you need to open cmd, download the jar file of our project and then type java-jar Ex2.jar. And if you want to play you can insert yor userName and game level to the window that opened and see how the agents is mooving to the pokemons and eat them.
 https://github.com/omerRabin/Ex2/issues/1#issue-771483436
+![image](https://user-images.githubusercontent.com/73130830/102702443-5c282200-426b-11eb-9efa-14a7f7bcbafa.png)
